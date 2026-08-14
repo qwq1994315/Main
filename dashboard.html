@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>科技感数据仪表盘原型</title>
+  <style>
+    :root {
+      --bg: #070b17;
+      --panel: rgba(15, 24, 46, 0.78);
+      --panel-border: rgba(91, 162, 255, 0.32);
+      --primary: #45caff;
+      --secondary: #8b7dff;
+      --success: #3be7a6;
+      --warning: #ffcc66;
+      --text: #dce9ff;
+      --muted: #8ea6d3;
+      --shadow: 0 0 24px rgba(69, 202, 255, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(69, 202, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 90% 0%, rgba(139, 125, 255, 0.25), transparent 25%),
+        linear-gradient(145deg, #050811, #0a1225 46%, #090d1f);
+      color: var(--text);
+      font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+      padding: 24px;
+    }
+
+    .dashboard {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      border-radius: 14px;
+      padding: 16px 20px;
+      backdrop-filter: blur(6px);
+    }
+
+    .header h1 {
+      font-size: 22px;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+
+    .header .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      right: -80px;
+      top: -80px;
+      background: radial-gradient(circle, rgba(69, 202, 255, 0.26), transparent 70%);
+      pointer-events: none;
+    }
+
+    .stat-title {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .stat-trend {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--success);
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 16px;
+    }
+
+    .chart-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 14px 14px 8px;
+      min-height: 340px;
+    }
+
+    .chart-title {
+      color: #f0f6ff;
+      font-size: 15px;
+      margin-bottom: 10px;
+      padding-left: 6px;
+      border-left: 3px solid var(--primary);
+    }
+
+    #pieChart,
+    #barChart {
+      width: 100%;
+      height: 290px;
+    }
+
+    .table-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px 10px;
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(91, 162, 255, 0.28);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(91, 162, 255, 0.12);
+      color: var(--text);
+    }
+
+    tbody tr:hover {
+      background: rgba(69, 202, 255, 0.06);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-up {
+      color: var(--success);
+      background: rgba(59, 231, 166, 0.14);
+      border: 1px solid rgba(59, 231, 166, 0.35);
+    }
+
+    .status-down {
+      color: var(--warning);
+      background: rgba(255, 204, 102, 0.12);
+      border: 1px solid rgba(255, 204, 102, 0.35);
+    }
+
+    .status-stable {
+      color: var(--primary);
+      background: rgba(69, 202, 255, 0.12);
+      border: 1px solid rgba(69, 202, 255, 0.35);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 960px) {
+      .charts {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-card {
+        min-height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <section class="header">
+      <h1>运营数据中枢 · Dashboard Prototype</h1>
+      <div class="meta">实时刷新频率：5 分钟 | 数据源：模拟样例</div>
+    </section>
+
+    <section class="stats">
+      <article class="stat-card">
+        <div class="stat-title">总营收（本月）</div>
+        <div class="stat-value">¥ 248K</div>
+        <div class="stat-trend">▲ 12.8%</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-title">新增用户</div>
+        <div class="stat-value">3,642</div>
+        <div class="stat-trend">▲ 8.1%</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-title">访问量 UV</div>
+        <div class="stat-value">89,300</div>
+        <div class="stat-trend">▲ 5.4%</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-title">预警事件</div>
+        <div class="stat-value">17</div>
+        <div class="stat-trend" style="color: var(--warning)">▼ 3.0%</div>
+      </article>
+    </section>
+
+    <section class="charts">
+      <article class="chart-card">
+        <h2 class="chart-title">数据分类占比（饼状图）</h2>
+        <div id="pieChart"></div>
+      </article>
+
+      <article class="chart-card">
+        <h2 class="chart-title">各渠道月度表现（柱状图）</h2>
+        <div id="barChart"></div>
+      </article>
+    </section>
+
+    <section class="table-card">
+      <h2 class="chart-title">分类数据明细（数字表格）</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>数据分类</th>
+              <th>渠道</th>
+              <th>访问量</th>
+              <th>转化率</th>
+              <th>营收（元）</th>
+              <th>环比</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footer-note">Prototype only · Design Focus: Futuristic / Tech Style</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script>
+    const pieChart = echarts.init(document.getElementById("pieChart"));
+    const barChart = echarts.init(document.getElementById("barChart"));
+
+    pieChart.setOption({
+      backgroundColor: "transparent",
+      tooltip: { trigger: "item" },
+      legend: {
+        orient: "vertical",
+        right: 0,
+        top: "center",
+        textStyle: { color: "#b5ccf5" }
+      },
+      series: [
+        {
+          name: "分类占比",
+          type: "pie",
+          radius: ["42%", "68%"],
+          center: ["40%", "52%"],
+          avoidLabelOverlap: false,
+          itemStyle: { borderColor: "#0a1225", borderWidth: 2 },
+          label: { show: false },
+          emphasis: {
+            label: { show: true, fontSize: 14, color: "#e6f1ff", formatter: "{b}\n{d}%" }
+          },
+          data: [
+            { value: 38, name: "销售数据", itemStyle: { color: "#45caff" } },
+            { value: 24, name: "用户行为", itemStyle: { color: "#8b7dff" } },
+            { value: 18, name: "流量来源", itemStyle: { color: "#3be7a6" } },
+            { value: 12, name: "系统告警", itemStyle: { color: "#ff9f6e" } },
+            { value: 8, name: "其他", itemStyle: { color: "#5f74a8" } }
+          ]
+        }
+      ]
+    });
+
+    barChart.setOption({
+      backgroundColor: "transparent",
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      grid: { left: "5%", right: "5%", bottom: "10%", top: "14%", containLabel: true },
+      xAxis: {
+        type: "category",
+        data: ["官网", "APP", "社媒", "渠道商", "线下活动", "私域"],
+        axisLine: { lineStyle: { color: "#5070a1" } },
+        axisLabel: { color: "#b5ccf5" }
+      },
+      yAxis: {
+        type: "value",
+        splitLine: { lineStyle: { color: "rgba(122, 154, 201, 0.2)" } },
+        axisLine: { lineStyle: { color: "#5070a1" } },
+        axisLabel: { color: "#b5ccf5" }
+      },
+      series: [
+        {
+          name: "本月转化",
+          type: "bar",
+          barWidth: "42%",
+          data: [126, 201, 154, 97, 82, 176],
+          itemStyle: {
+            borderRadius: [8, 8, 0, 0],
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "#5ad6ff" },
+              { offset: 1, color: "#5e6bff" }
+            ]),
+            shadowBlur: 14,
+            shadowColor: "rgba(90, 214, 255, 0.38)"
+          }
+        }
+      ]
+    });
+
+    const tableRows = [
+      { category: "销售数据", channel: "官网", visits: 18240, rate: "4.8%", revenue: 68420, change: "+12.3%", status: "up" },
+      { category: "销售数据", channel: "APP", visits: 25680, rate: "6.1%", revenue: 92350, change: "+9.7%", status: "up" },
+      { category: "用户行为", channel: "社媒", visits: 14320, rate: "3.2%", revenue: 31280, change: "+5.1%", status: "stable" },
+      { category: "流量来源", channel: "渠道商", visits: 9680, rate: "2.7%", revenue: 19860, change: "-1.4%", status: "down" },
+      { category: "系统告警", channel: "私域", visits: 11250, rate: "5.5%", revenue: 42100, change: "+15.8%", status: "up" },
+      { category: "其他", channel: "线下活动", visits: 7890, rate: "2.1%", revenue: 12640, change: "+0.6%", status: "stable" }
+    ];
+
+    const statusMap = {
+      up: { label: "增长", className: "status-up" },
+      down: { label: "回落", className: "status-down" },
+      stable: { label: "平稳", className: "status-stable" }
+    };
+
+    document.getElementById("dataTableBody").innerHTML = tableRows
+      .map((row) => {
+        const status = statusMap[row.status];
+        return `
+          <tr>
+            <td>${row.category}</td>
+            <td>${row.channel}</td>
+            <td class="num">${row.visits.toLocaleString()}</td>
+            <td class="num">${row.rate}</td>
+            <td class="num">${row.revenue.toLocaleString()}</td>
+            <td class="num">${row.change}</td>
+            <td><span class="status ${status.className}">${status.label}</span></td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    window.addEventListener("resize", () => {
+      pieChart.resize();
+      barChart.resize();
+    });
+  </script>
+</body>
+</html>
