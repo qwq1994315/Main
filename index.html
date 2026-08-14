@@ -107,6 +107,46 @@
       margin-bottom: 8px;
     }
 
+    .output-wrap {
+      position: relative;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      border-radius: 12px;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: blur(2px);
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(37, 99, 235, 0.18);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     textarea {
       width: 100%;
       min-height: 180px;
@@ -155,6 +195,34 @@
       background: var(--primary-hover);
     }
 
+    button.primary:disabled,
+    button.secondary:disabled,
+    .swap-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.primary.loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    button.primary.loading .btn-spinner {
+      display: inline-block;
+    }
+
     button.secondary {
       background: #eef2ff;
       color: #1e3a8a;
@@ -186,6 +254,11 @@
       color: var(--primary);
     }
 
+    .chip:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .status {
       margin-top: 12px;
       font-size: 13px;
@@ -199,6 +272,10 @@
 
     .status.error {
       color: #dc2626;
+    }
+
+    .status.loading {
+      color: var(--primary);
     }
 
     @media (max-width: 768px) {
@@ -227,14 +304,21 @@
           <label for="input">输入文本 / Input</label>
           <textarea id="input" placeholder="请输入要翻译的内容..."></textarea>
         </div>
-        <div class="panel">
+        <div class="panel output-wrap">
           <label for="output">翻译结果 / Output</label>
           <textarea id="output" readonly placeholder="翻译结果会显示在这里..."></textarea>
+          <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <span id="loadingText">正在翻译，请稍候...</span>
+          </div>
         </div>
       </div>
 
       <div class="actions">
-        <button class="primary" id="translateBtn">翻译 Translate</button>
+        <button class="primary" id="translateBtn">
+          <span class="btn-spinner"></span>
+          <span id="translateBtnText">翻译 Translate</span>
+        </button>
         <button class="secondary" id="clearBtn">清空 Clear</button>
         <button class="secondary" id="copyBtn">复制结果 Copy</button>
       </div>
@@ -251,8 +335,16 @@
     const fromLangEl = document.getElementById("fromLang");
     const toLangEl = document.getElementById("toLang");
     const examplesEl = document.getElementById("examples");
+    const translateBtn = document.getElementById("translateBtn");
+    const translateBtnText = document.getElementById("translateBtnText");
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const loadingText = document.getElementById("loadingText");
+    const swapBtn = document.getElementById("swapBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const copyBtn = document.getElementById("copyBtn");
 
     let direction = "zh-en";
+    let isTranslating = false;
 
     const examples = {
       "zh-en": ["你好，世界", "今天天气很好", "我正在学习编程"],
@@ -285,6 +377,30 @@
       statusEl.className = `status ${type}`.trim();
     }
 
+    function setLoading(loading) {
+      isTranslating = loading;
+      translateBtn.disabled = loading;
+      swapBtn.disabled = loading;
+      clearBtn.disabled = loading;
+      copyBtn.disabled = loading;
+      inputEl.disabled = loading;
+      translateBtn.classList.toggle("loading", loading);
+      loadingOverlay.classList.toggle("active", loading);
+
+      examplesEl.querySelectorAll(".chip").forEach((chip) => {
+        chip.disabled = loading;
+      });
+
+      if (loading) {
+        translateBtnText.textContent = direction === "zh-en" ? "翻译中..." : "Translating...";
+        loadingText.textContent = direction === "zh-en" ? "正在翻译，请稍候..." : "Translating, please wait...";
+        setStatus(direction === "zh-en" ? "正在请求翻译服务..." : "Requesting translation service...", "loading");
+      } else {
+        translateBtnText.textContent = "翻译 Translate";
+        loadingText.textContent = direction === "zh-en" ? "正在翻译，请稍候..." : "Translating, please wait...";
+      }
+    }
+
     async function translateText(text) {
       const langpair = direction === "zh-en" ? "zh-CN|en" : "en|zh-CN";
       const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}`;
@@ -301,13 +417,15 @@
     }
 
     async function handleTranslate() {
+      if (isTranslating) return;
+
       const text = inputEl.value.trim();
       if (!text) {
         setStatus("请先输入要翻译的内容。", "error");
         return;
       }
 
-      setStatus("翻译中...");
+      setLoading(true);
       outputEl.value = "";
 
       try {
@@ -316,16 +434,20 @@
         setStatus("翻译完成。", "ok");
       } catch (error) {
         setStatus(error.message || "翻译失败，请检查网络后重试。", "error");
+      } finally {
+        setLoading(false);
       }
     }
 
-    document.getElementById("translateBtn").addEventListener("click", handleTranslate);
-    document.getElementById("clearBtn").addEventListener("click", () => {
+    translateBtn.addEventListener("click", handleTranslate);
+    clearBtn.addEventListener("click", () => {
+      if (isTranslating) return;
       inputEl.value = "";
       outputEl.value = "";
       setStatus("");
     });
-    document.getElementById("copyBtn").addEventListener("click", async () => {
+    copyBtn.addEventListener("click", async () => {
+      if (isTranslating) return;
       if (!outputEl.value) {
         setStatus("没有可复制的内容。", "error");
         return;
@@ -333,7 +455,8 @@
       await navigator.clipboard.writeText(outputEl.value);
       setStatus("已复制到剪贴板。", "ok");
     });
-    document.getElementById("swapBtn").addEventListener("click", () => {
+    swapBtn.addEventListener("click", () => {
+      if (isTranslating) return;
       direction = direction === "zh-en" ? "en-zh" : "zh-en";
       const temp = inputEl.value;
       inputEl.value = outputEl.value;
@@ -342,6 +465,7 @@
       setStatus("已切换翻译方向。");
     });
     examplesEl.addEventListener("click", (event) => {
+      if (isTranslating) return;
       const chip = event.target.closest(".chip");
       if (!chip) return;
       inputEl.value = chip.dataset.text;
