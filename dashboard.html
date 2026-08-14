@@ -139,6 +139,81 @@
       height: 290px;
     }
 
+    .table-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px 10px;
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(91, 162, 255, 0.28);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(91, 162, 255, 0.12);
+      color: var(--text);
+    }
+
+    tbody tr:hover {
+      background: rgba(69, 202, 255, 0.06);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-up {
+      color: var(--success);
+      background: rgba(59, 231, 166, 0.14);
+      border: 1px solid rgba(59, 231, 166, 0.35);
+    }
+
+    .status-down {
+      color: var(--warning);
+      background: rgba(255, 204, 102, 0.12);
+      border: 1px solid rgba(255, 204, 102, 0.35);
+    }
+
+    .status-stable {
+      color: var(--primary);
+      background: rgba(69, 202, 255, 0.12);
+      border: 1px solid rgba(69, 202, 255, 0.35);
+    }
+
     .footer-note {
       color: var(--muted);
       font-size: 12px;
@@ -197,6 +272,26 @@
         <h2 class="chart-title">各渠道月度表现（柱状图）</h2>
         <div id="barChart"></div>
       </article>
+    </section>
+
+    <section class="table-card">
+      <h2 class="chart-title">分类数据明细（数字表格）</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>数据分类</th>
+              <th>渠道</th>
+              <th>访问量</th>
+              <th>转化率</th>
+              <th>营收（元）</th>
+              <th>环比</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
     </section>
 
     <p class="footer-note">Prototype only · Design Focus: Futuristic / Tech Style</p>
@@ -273,6 +368,38 @@
         }
       ]
     });
+
+    const tableRows = [
+      { category: "销售数据", channel: "官网", visits: 18240, rate: "4.8%", revenue: 68420, change: "+12.3%", status: "up" },
+      { category: "销售数据", channel: "APP", visits: 25680, rate: "6.1%", revenue: 92350, change: "+9.7%", status: "up" },
+      { category: "用户行为", channel: "社媒", visits: 14320, rate: "3.2%", revenue: 31280, change: "+5.1%", status: "stable" },
+      { category: "流量来源", channel: "渠道商", visits: 9680, rate: "2.7%", revenue: 19860, change: "-1.4%", status: "down" },
+      { category: "系统告警", channel: "私域", visits: 11250, rate: "5.5%", revenue: 42100, change: "+15.8%", status: "up" },
+      { category: "其他", channel: "线下活动", visits: 7890, rate: "2.1%", revenue: 12640, change: "+0.6%", status: "stable" }
+    ];
+
+    const statusMap = {
+      up: { label: "增长", className: "status-up" },
+      down: { label: "回落", className: "status-down" },
+      stable: { label: "平稳", className: "status-stable" }
+    };
+
+    document.getElementById("dataTableBody").innerHTML = tableRows
+      .map((row) => {
+        const status = statusMap[row.status];
+        return `
+          <tr>
+            <td>${row.category}</td>
+            <td>${row.channel}</td>
+            <td class="num">${row.visits.toLocaleString()}</td>
+            <td class="num">${row.rate}</td>
+            <td class="num">${row.revenue.toLocaleString()}</td>
+            <td class="num">${row.change}</td>
+            <td><span class="status ${status.className}">${status.label}</span></td>
+          </tr>
+        `;
+      })
+      .join("");
 
     window.addEventListener("resize", () => {
       pieChart.resize();
