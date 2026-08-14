@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中英翻译 Demo</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --border: #dbe4f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --text: #0f172a;
+      --muted: #64748b;
+      --success: #059669;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #eef4ff 0%, #f8fafc 45%, #f1f5f9 100%);
+      color: var(--text);
+      font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+      padding: 32px 16px;
+    }
+
+    .app {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .lang-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .lang-box {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    .swap-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      transition: 0.2s ease;
+    }
+
+    .swap-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: rotate(180deg);
+    }
+
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    #output {
+      background: #f8fafc;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button.primary,
+    button.secondary {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    button.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    button.secondary {
+      background: #eef2ff;
+      color: #1e3a8a;
+    }
+
+    button.secondary:hover {
+      background: #e0e7ff;
+    }
+
+    .examples {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    .status.ok {
+      color: var(--success);
+    }
+
+    .status.error {
+      color: #dc2626;
+    }
+
+    @media (max-width: 768px) {
+      .panels {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>中英翻译 Demo</h1>
+      <p>Simple Chinese ↔ English Translation Prototype</p>
+    </header>
+
+    <section class="card">
+      <div class="lang-bar">
+        <div class="lang-box" id="fromLang">中文</div>
+        <button class="swap-btn" id="swapBtn" title="切换语言">⇄</button>
+        <div class="lang-box" id="toLang">English</div>
+      </div>
+
+      <div class="panels">
+        <div class="panel">
+          <label for="input">输入文本 / Input</label>
+          <textarea id="input" placeholder="请输入要翻译的内容..."></textarea>
+        </div>
+        <div class="panel">
+          <label for="output">翻译结果 / Output</label>
+          <textarea id="output" readonly placeholder="翻译结果会显示在这里..."></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="translateBtn">翻译 Translate</button>
+        <button class="secondary" id="clearBtn">清空 Clear</button>
+        <button class="secondary" id="copyBtn">复制结果 Copy</button>
+      </div>
+
+      <div class="examples" id="examples"></div>
+      <div class="status" id="status"></div>
+    </section>
+  </main>
+
+  <script>
+    const inputEl = document.getElementById("input");
+    const outputEl = document.getElementById("output");
+    const statusEl = document.getElementById("status");
+    const fromLangEl = document.getElementById("fromLang");
+    const toLangEl = document.getElementById("toLang");
+    const examplesEl = document.getElementById("examples");
+
+    let direction = "zh-en";
+
+    const examples = {
+      "zh-en": ["你好，世界", "今天天气很好", "我正在学习编程"],
+      "en-zh": ["Hello, world", "How are you today?", "I am building a demo app"]
+    };
+
+    function updateLangLabels() {
+      if (direction === "zh-en") {
+        fromLangEl.textContent = "中文";
+        toLangEl.textContent = "English";
+        inputEl.placeholder = "请输入要翻译的内容...";
+        outputEl.placeholder = "翻译结果会显示在这里...";
+      } else {
+        fromLangEl.textContent = "English";
+        toLangEl.textContent = "中文";
+        inputEl.placeholder = "Type text to translate...";
+        outputEl.placeholder = "Translation will appear here...";
+      }
+      renderExamples();
+    }
+
+    function renderExamples() {
+      examplesEl.innerHTML = examples[direction]
+        .map((text) => `<button class="chip" data-text="${text}">${text}</button>`)
+        .join("");
+    }
+
+    function setStatus(message, type = "") {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`.trim();
+    }
+
+    async function translateText(text) {
+      const langpair = direction === "zh-en" ? "zh-CN|en" : "en|zh-CN";
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("翻译服务暂时不可用，请稍后再试。");
+      }
+      const data = await response.json();
+      const translated = data?.responseData?.translatedText;
+      if (!translated) {
+        throw new Error("未获取到翻译结果。");
+      }
+      return translated;
+    }
+
+    async function handleTranslate() {
+      const text = inputEl.value.trim();
+      if (!text) {
+        setStatus("请先输入要翻译的内容。", "error");
+        return;
+      }
+
+      setStatus("翻译中...");
+      outputEl.value = "";
+
+      try {
+        const result = await translateText(text);
+        outputEl.value = result;
+        setStatus("翻译完成。", "ok");
+      } catch (error) {
+        setStatus(error.message || "翻译失败，请检查网络后重试。", "error");
+      }
+    }
+
+    document.getElementById("translateBtn").addEventListener("click", handleTranslate);
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      inputEl.value = "";
+      outputEl.value = "";
+      setStatus("");
+    });
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      if (!outputEl.value) {
+        setStatus("没有可复制的内容。", "error");
+        return;
+      }
+      await navigator.clipboard.writeText(outputEl.value);
+      setStatus("已复制到剪贴板。", "ok");
+    });
+    document.getElementById("swapBtn").addEventListener("click", () => {
+      direction = direction === "zh-en" ? "en-zh" : "zh-en";
+      const temp = inputEl.value;
+      inputEl.value = outputEl.value;
+      outputEl.value = temp;
+      updateLangLabels();
+      setStatus("已切换翻译方向。");
+    });
+    examplesEl.addEventListener("click", (event) => {
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      inputEl.value = chip.dataset.text;
+      handleTranslate();
+    });
+    inputEl.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        handleTranslate();
+      }
+    });
+
+    updateLangLabels();
+  </script>
+</body>
+</html>
