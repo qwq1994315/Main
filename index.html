@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>中英翻译 Demo</title>
+  <title>多语言翻译 Demo</title>
   <style>
     :root {
       --bg: #f4f7fb;
@@ -69,12 +69,38 @@
 
     .lang-box {
       flex: 1;
-      text-align: center;
-      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .lang-box label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .lang-select {
+      width: 100%;
+      padding: 10px 12px;
       border-radius: 10px;
       background: #f8fafc;
       border: 1px solid var(--border);
+      font-size: 14px;
       font-weight: 600;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .lang-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .lang-select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .swap-btn {
@@ -288,15 +314,21 @@
 <body>
   <main class="app">
     <header class="header">
-      <h1>中英翻译 Demo</h1>
-      <p>Simple Chinese ↔ English Translation Prototype</p>
+      <h1>多语言翻译 Demo</h1>
+      <p>支持中文、英语、俄语、法语、日语互译</p>
     </header>
 
     <section class="card">
       <div class="lang-bar">
-        <div class="lang-box" id="fromLang">中文</div>
+        <div class="lang-box">
+          <label for="fromLangSelect">源语言 / From</label>
+          <select class="lang-select" id="fromLangSelect"></select>
+        </div>
         <button class="swap-btn" id="swapBtn" title="切换语言">⇄</button>
-        <div class="lang-box" id="toLang">English</div>
+        <div class="lang-box">
+          <label for="toLangSelect">目标语言 / To</label>
+          <select class="lang-select" id="toLangSelect"></select>
+        </div>
       </div>
 
       <div class="panels">
@@ -332,8 +364,8 @@
     const inputEl = document.getElementById("input");
     const outputEl = document.getElementById("output");
     const statusEl = document.getElementById("status");
-    const fromLangEl = document.getElementById("fromLang");
-    const toLangEl = document.getElementById("toLang");
+    const fromLangSelect = document.getElementById("fromLangSelect");
+    const toLangSelect = document.getElementById("toLangSelect");
     const examplesEl = document.getElementById("examples");
     const translateBtn = document.getElementById("translateBtn");
     const translateBtnText = document.getElementById("translateBtnText");
@@ -343,33 +375,63 @@
     const clearBtn = document.getElementById("clearBtn");
     const copyBtn = document.getElementById("copyBtn");
 
-    let direction = "zh-en";
     let isTranslating = false;
 
-    const examples = {
-      "zh-en": ["你好，世界", "今天天气很好", "我正在学习编程"],
-      "en-zh": ["Hello, world", "How are you today?", "I am building a demo app"]
+    const LANGUAGES = {
+      zh: { code: "zh-CN", label: "中文", placeholder: "请输入要翻译的内容..." },
+      en: { code: "en", label: "English", placeholder: "Type text to translate..." },
+      ru: { code: "ru", label: "Русский", placeholder: "Введите текст для перевода..." },
+      fr: { code: "fr", label: "Français", placeholder: "Saisissez le texte à traduire..." },
+      ja: { code: "ja", label: "日本語", placeholder: "翻訳するテキストを入力してください..." }
     };
 
-    function updateLangLabels() {
-      if (direction === "zh-en") {
-        fromLangEl.textContent = "中文";
-        toLangEl.textContent = "English";
-        inputEl.placeholder = "请输入要翻译的内容...";
-        outputEl.placeholder = "翻译结果会显示在这里...";
-      } else {
-        fromLangEl.textContent = "English";
-        toLangEl.textContent = "中文";
-        inputEl.placeholder = "Type text to translate...";
-        outputEl.placeholder = "Translation will appear here...";
-      }
+    const examples = {
+      zh: ["你好，世界", "今天天气很好", "人工智能正在改变世界"],
+      en: ["Hello, world", "How are you today?", "AI is changing the world"],
+      ru: ["Привет, мир", "Как дела?", "Искусственный интеллект меняет мир"],
+      fr: ["Bonjour le monde", "Comment ça va ?", "L'intelligence artificielle change le monde"],
+      ja: ["こんにちは、世界", "お元気ですか", "人工知能が世界を変えています"]
+    };
+
+    function getLangKey(selectEl) {
+      return selectEl.value;
+    }
+
+    function getLangConfig(key) {
+      return LANGUAGES[key];
+    }
+
+    function renderLanguageOptions() {
+      const options = Object.entries(LANGUAGES)
+        .map(([key, lang]) => `<option value="${key}">${lang.label}</option>`)
+        .join("");
+
+      fromLangSelect.innerHTML = options;
+      toLangSelect.innerHTML = options;
+      fromLangSelect.value = "zh";
+      toLangSelect.value = "en";
+    }
+
+    function updateLangUI() {
+      const fromLang = getLangConfig(getLangKey(fromLangSelect));
+      inputEl.placeholder = fromLang.placeholder;
+      outputEl.placeholder = "翻译结果会显示在这里... / Translation will appear here...";
       renderExamples();
     }
 
     function renderExamples() {
-      examplesEl.innerHTML = examples[direction]
+      const fromKey = getLangKey(fromLangSelect);
+      examplesEl.innerHTML = (examples[fromKey] || [])
         .map((text) => `<button class="chip" data-text="${text}">${text}</button>`)
         .join("");
+    }
+
+    function ensureDifferentLanguages() {
+      if (fromLangSelect.value === toLangSelect.value) {
+        const keys = Object.keys(LANGUAGES);
+        const currentIndex = keys.indexOf(fromLangSelect.value);
+        toLangSelect.value = keys[(currentIndex + 1) % keys.length];
+      }
     }
 
     function setStatus(message, type = "") {
@@ -384,6 +446,8 @@
       clearBtn.disabled = loading;
       copyBtn.disabled = loading;
       inputEl.disabled = loading;
+      fromLangSelect.disabled = loading;
+      toLangSelect.disabled = loading;
       translateBtn.classList.toggle("loading", loading);
       loadingOverlay.classList.toggle("active", loading);
 
@@ -392,17 +456,19 @@
       });
 
       if (loading) {
-        translateBtnText.textContent = direction === "zh-en" ? "翻译中..." : "Translating...";
-        loadingText.textContent = direction === "zh-en" ? "正在翻译，请稍候..." : "Translating, please wait...";
-        setStatus(direction === "zh-en" ? "正在请求翻译服务..." : "Requesting translation service...", "loading");
+        translateBtnText.textContent = "翻译中...";
+        loadingText.textContent = "正在翻译，请稍候...";
+        setStatus("正在请求翻译服务...", "loading");
       } else {
         translateBtnText.textContent = "翻译 Translate";
-        loadingText.textContent = direction === "zh-en" ? "正在翻译，请稍候..." : "Translating, please wait...";
+        loadingText.textContent = "正在翻译，请稍候...";
       }
     }
 
     async function translateText(text) {
-      const langpair = direction === "zh-en" ? "zh-CN|en" : "en|zh-CN";
+      const fromLang = getLangConfig(getLangKey(fromLangSelect));
+      const toLang = getLangConfig(getLangKey(toLangSelect));
+      const langpair = `${fromLang.code}|${toLang.code}`;
       const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}`;
       const response = await fetch(url);
       if (!response.ok) {
@@ -422,6 +488,11 @@
       const text = inputEl.value.trim();
       if (!text) {
         setStatus("请先输入要翻译的内容。", "error");
+        return;
+      }
+
+      if (fromLangSelect.value === toLangSelect.value) {
+        setStatus("源语言和目标语言不能相同。", "error");
         return;
       }
 
@@ -457,12 +528,25 @@
     });
     swapBtn.addEventListener("click", () => {
       if (isTranslating) return;
-      direction = direction === "zh-en" ? "en-zh" : "zh-en";
-      const temp = inputEl.value;
+      const tempLang = fromLangSelect.value;
+      fromLangSelect.value = toLangSelect.value;
+      toLangSelect.value = tempLang;
+      const tempText = inputEl.value;
       inputEl.value = outputEl.value;
-      outputEl.value = temp;
-      updateLangLabels();
+      outputEl.value = tempText;
+      updateLangUI();
       setStatus("已切换翻译方向。");
+    });
+    fromLangSelect.addEventListener("change", () => {
+      ensureDifferentLanguages();
+      updateLangUI();
+    });
+    toLangSelect.addEventListener("change", () => {
+      if (fromLangSelect.value === toLangSelect.value) {
+        setStatus("源语言和目标语言不能相同。", "error");
+      } else {
+        setStatus("");
+      }
     });
     examplesEl.addEventListener("click", (event) => {
       if (isTranslating) return;
@@ -477,7 +561,8 @@
       }
     });
 
-    updateLangLabels();
+    renderLanguageOptions();
+    updateLangUI();
   </script>
 </body>
 </html>
