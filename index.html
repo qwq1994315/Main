@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="simple">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>多语言翻译 Demo</title>
+  <style>
+    :root,
+    [data-theme="simple"] {
+      --body-bg: linear-gradient(160deg, #eef4ff 0%, #f8fafc 45%, #f1f5f9 100%);
+      --card: #ffffff;
+      --input-bg: #f8fafc;
+      --output-bg: #f8fafc;
+      --border: #dbe4f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary-bg: #eef2ff;
+      --secondary-text: #1e3a8a;
+      --secondary-hover: #e0e7ff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --success: #059669;
+      --error: #dc2626;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --focus-ring: rgba(37, 99, 235, 0.12);
+      --spinner-track: rgba(37, 99, 235, 0.18);
+      --overlay-bg: rgba(248, 250, 252, 0.88);
+      --chip-bg: #ffffff;
+      --swap-btn-bg: #ffffff;
+      --radius-card: 16px;
+      --radius-input: 12px;
+      --radius-btn: 10px;
+      --font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    [data-theme="tech"] {
+      --body-bg:
+        radial-gradient(circle at 10% 10%, rgba(69, 202, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 90% 0%, rgba(139, 125, 255, 0.25), transparent 25%),
+        linear-gradient(145deg, #050811, #0a1225 46%, #090d1f);
+      --card: rgba(15, 24, 46, 0.82);
+      --input-bg: rgba(8, 14, 30, 0.72);
+      --output-bg: rgba(8, 14, 30, 0.72);
+      --border: rgba(91, 162, 255, 0.32);
+      --primary: #45caff;
+      --primary-hover: #2eb8ef;
+      --secondary-bg: rgba(69, 202, 255, 0.12);
+      --secondary-text: #b8dcff;
+      --secondary-hover: rgba(69, 202, 255, 0.2);
+      --text: #dce9ff;
+      --muted: #8ea6d3;
+      --success: #3be7a6;
+      --error: #ff8f8f;
+      --shadow: 0 0 24px rgba(69, 202, 255, 0.18);
+      --focus-ring: rgba(69, 202, 255, 0.2);
+      --spinner-track: rgba(69, 202, 255, 0.18);
+      --overlay-bg: rgba(8, 14, 30, 0.88);
+      --chip-bg: rgba(12, 22, 44, 0.9);
+      --swap-btn-bg: rgba(12, 22, 44, 0.9);
+      --radius-card: 14px;
+      --radius-input: 12px;
+      --radius-btn: 10px;
+      --font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    [data-theme="apple"] {
+      --body-bg: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+      --card: rgba(255, 255, 255, 0.82);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --output-bg: rgba(245, 245, 247, 0.95);
+      --border: rgba(0, 0, 0, 0.08);
+      --primary: #0071e3;
+      --primary-hover: #0077ed;
+      --secondary-bg: #f5f5f7;
+      --secondary-text: #1d1d1f;
+      --secondary-hover: #ececf0;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --success: #248a3d;
+      --error: #d70015;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+      --focus-ring: rgba(0, 113, 227, 0.18);
+      --spinner-track: rgba(0, 113, 227, 0.18);
+      --overlay-bg: rgba(255, 255, 255, 0.82);
+      --chip-bg: #f5f5f7;
+      --swap-btn-bg: #ffffff;
+      --radius-card: 22px;
+      --radius-input: 16px;
+      --radius-btn: 999px;
+      --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+
+    [data-theme="cute"] {
+      --body-bg: linear-gradient(160deg, #fff0f6 0%, #fff7fb 40%, #f4f0ff 100%);
+      --card: #fffafd;
+      --input-bg: #fff7fc;
+      --output-bg: #fff4fa;
+      --border: #f6c9df;
+      --primary: #ff6cab;
+      --primary-hover: #ff4f98;
+      --secondary-bg: #f7e8ff;
+      --secondary-text: #8b4bb8;
+      --secondary-hover: #efdbff;
+      --text: #5b3a4d;
+      --muted: #9b6f88;
+      --success: #4cb98a;
+      --error: #e85d8f;
+      --shadow: 0 14px 34px rgba(255, 108, 171, 0.16);
+      --focus-ring: rgba(255, 108, 171, 0.18);
+      --spinner-track: rgba(255, 108, 171, 0.2);
+      --overlay-bg: rgba(255, 247, 252, 0.9);
+      --chip-bg: #fff7fc;
+      --swap-btn-bg: #fff7fc;
+      --radius-card: 24px;
+      --radius-input: 18px;
+      --radius-btn: 999px;
+      --font-family: "Nunito", "Comic Sans MS", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--body-bg);
+      color: var(--text);
+      font-family: var(--font-family);
+      padding: 32px 16px;
+      transition: background 0.35s ease, color 0.35s ease;
+    }
+
+    .page-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.9;
+    }
+
+    .petal-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    [data-theme="cute"] .petal-layer,
+    [data-theme="simple"] .petal-layer {
+      opacity: 1;
+    }
+
+    .falling-petal {
+      position: absolute;
+      top: -8vh;
+      font-size: 18px;
+      opacity: 0;
+      animation: petalFall linear infinite;
+      filter: drop-shadow(0 2px 4px rgba(255, 108, 171, 0.18));
+    }
+
+    [data-theme="simple"] .falling-petal {
+      color: rgba(37, 99, 235, 0.22);
+      filter: none;
+      font-size: 14px;
+    }
+
+    [data-theme="cute"] .falling-petal {
+      color: rgba(255, 108, 171, 0.55);
+    }
+
+    @keyframes petalFall {
+      0% {
+        transform: translate3d(0, -10vh, 0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.85;
+      }
+      100% {
+        transform: translate3d(var(--sway), 110vh, 0) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .falling-petal,
+      .bg-layer.tech::after,
+      .ornament.cute.a,
+      .ornament.cute.b,
+      .ornament.cute.c,
+      .bg-layer.cute::before {
+        animation: none !important;
+      }
+
+      .particle-canvas {
+        display: none;
+      }
+    }
+
+    .bg-layer {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    [data-theme="simple"] .bg-layer.simple,
+    [data-theme="tech"] .bg-layer.tech,
+    [data-theme="apple"] .bg-layer.apple,
+    [data-theme="cute"] .bg-layer.cute {
+      opacity: 1;
+    }
+
+    .bg-layer.simple {
+      background:
+        radial-gradient(circle, rgba(37, 99, 235, 0.12) 1px, transparent 1.6px) 0 0 / 24px 24px,
+        repeating-linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0 1px, transparent 1px 28px);
+    }
+
+    .bg-layer.simple::before,
+    .bg-layer.simple::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      border-radius: 24px;
+    }
+
+    .bg-layer.simple::before {
+      width: 180px;
+      height: 180px;
+      top: 8%;
+      right: 6%;
+      transform: rotate(18deg);
+    }
+
+    .bg-layer.simple::after {
+      width: 120px;
+      height: 120px;
+      bottom: 10%;
+      left: 5%;
+      border-radius: 50%;
+    }
+
+    .bg-layer.tech {
+      background:
+        linear-gradient(rgba(69, 202, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(69, 202, 255, 0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+    }
+
+    .bg-layer.tech::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(69, 202, 255, 0.22), transparent 24%),
+        radial-gradient(circle at 85% 12%, rgba(139, 125, 255, 0.24), transparent 22%),
+        radial-gradient(circle at 70% 80%, rgba(59, 231, 166, 0.12), transparent 20%);
+    }
+
+    .bg-layer.tech::after {
+      content: "";
+      position: absolute;
+      left: -20%;
+      right: -20%;
+      top: 35%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(69, 202, 255, 0.7), transparent);
+      animation: scan 6s linear infinite;
+      box-shadow: 0 0 18px rgba(69, 202, 255, 0.45);
+    }
+
+    .bg-layer.apple {
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, 0.035) 0.8px, transparent 0.8px) 0 0 / 18px 18px;
+    }
+
+    .bg-layer.apple::before,
+    .bg-layer.apple::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(8px);
+    }
+
+    .bg-layer.apple::before {
+      width: 320px;
+      height: 320px;
+      top: -80px;
+      left: -60px;
+      background: radial-gradient(circle, rgba(0, 113, 227, 0.18), transparent 70%);
+    }
+
+    .bg-layer.apple::after {
+      width: 380px;
+      height: 380px;
+      right: -100px;
+      bottom: -120px;
+      background: radial-gradient(circle, rgba(175, 82, 222, 0.16), transparent 72%);
+    }
+
+    .bg-layer.cute {
+      background:
+        radial-gradient(circle, rgba(255, 108, 171, 0.16) 2px, transparent 2.5px) 0 0 / 28px 28px,
+        radial-gradient(circle, rgba(139, 75, 184, 0.1) 1.5px, transparent 2px) 14px 14px / 28px 28px;
+    }
+
+    .bg-layer.cute::before {
+      content: "♥ ✦ ♡ ☁ ✧ ♥ ★ ♡";
+      position: absolute;
+      inset: 0;
+      font-size: 28px;
+      line-height: 2.2;
+      letter-spacing: 42px;
+      color: rgba(255, 108, 171, 0.18);
+      word-spacing: 80px;
+      transform: rotate(-8deg);
+      animation: floatDecor 12s ease-in-out infinite;
+    }
+
+    .bg-layer.cute::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 180px;
+      background:
+        radial-gradient(120% 80% at 50% 100%, rgba(255, 182, 214, 0.35), transparent 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23ffd8ea' d='M0,64 C200,120 400,0 600,48 C800,96 1000,24 1200,64 L1200,120 L0,120 Z'/%3E%3C/svg%3E") bottom center / 100% 120px no-repeat;
+    }
+
+    .bg-ornaments {
+      position: absolute;
+      inset: 0;
+    }
+
+    .ornament {
+      position: absolute;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    [data-theme="simple"] .ornament.simple,
+    [data-theme="tech"] .ornament.tech,
+    [data-theme="apple"] .ornament.apple,
+    [data-theme="cute"] .ornament.cute {
+      opacity: 1;
+    }
+
+    .ornament.simple.a {
+      top: 14%;
+      left: 8%;
+      width: 64px;
+      height: 64px;
+      border: 2px solid rgba(37, 99, 235, 0.14);
+      border-radius: 16px;
+      transform: rotate(-12deg);
+    }
+
+    .ornament.simple.b {
+      right: 10%;
+      bottom: 16%;
+      width: 90px;
+      height: 90px;
+      border: 2px dashed rgba(37, 99, 235, 0.12);
+      border-radius: 50%;
+    }
+
+    .ornament.tech.a,
+    .ornament.tech.b,
+    .ornament.tech.c {
+      border: 1px solid rgba(69, 202, 255, 0.35);
+      box-shadow: 0 0 16px rgba(69, 202, 255, 0.18);
+    }
+
+    .ornament.tech.a {
+      top: 12%;
+      left: 7%;
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      transform: rotate(45deg);
+    }
+
+    .ornament.tech.b {
+      top: 18%;
+      right: 8%;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(69, 202, 255, 0.5);
+    }
+
+    .ornament.tech.c {
+      left: 12%;
+      bottom: 18%;
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(69, 202, 255, 0.8), transparent);
+      border: none;
+      box-shadow: none;
+    }
+
+    .ornament.apple.a,
+    .ornament.apple.b {
+      border-radius: 50%;
+      filter: blur(2px);
+    }
+
+    .ornament.apple.a {
+      top: 18%;
+      right: 12%;
+      width: 110px;
+      height: 110px;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .ornament.apple.b {
+      bottom: 14%;
+      left: 10%;
+      width: 76px;
+      height: 76px;
+      background: rgba(245, 245, 247, 0.7);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .ornament.cute.a,
+    .ornament.cute.b,
+    .ornament.cute.c {
+      font-size: 34px;
+      color: rgba(255, 108, 171, 0.28);
+      animation: floatDecor 8s ease-in-out infinite;
+    }
+
+    .ornament.cute.a { top: 10%; right: 12%; }
+    .ornament.cute.b { top: 28%; left: 8%; animation-delay: 1.2s; }
+    .ornament.cute.c { bottom: 18%; right: 16%; animation-delay: 2s; font-size: 42px; }
+
+    @keyframes scan {
+      0% { transform: translateY(-30vh); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(70vh); opacity: 0; }
+    }
+
+    @keyframes floatDecor {
+      0%, 100% { transform: translateY(0) rotate(-8deg); }
+      50% { transform: translateY(-12px) rotate(-4deg); }
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .theme-switcher {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--border);
+      background: var(--chip-bg);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .theme-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .theme-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .lang-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .lang-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .lang-box label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .lang-select,
+    textarea,
+    .swap-btn,
+    button.primary,
+    button.secondary,
+    .chip {
+      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .lang-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-input);
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .lang-select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--focus-ring);
+    }
+
+    .lang-select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .swap-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--swap-btn-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .swap-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: rotate(180deg);
+    }
+
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .output-wrap {
+      position: relative;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      border-radius: var(--radius-input);
+      background: var(--overlay-bg);
+      backdrop-filter: blur(2px);
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--spinner-track);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-input);
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      outline: none;
+      background: var(--input-bg);
+      color: var(--text);
+    }
+
+    #output {
+      background: var(--output-bg);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button.primary,
+    button.secondary {
+      border: none;
+      border-radius: var(--radius-btn);
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    button.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    button.primary:disabled,
+    button.secondary:disabled,
+    .swap-btn:disabled,
+    .theme-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.primary.loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    button.primary.loading .btn-spinner {
+      display: inline-block;
+    }
+
+    button.secondary {
+      background: var(--secondary-bg);
+      color: var(--secondary-text);
+    }
+
+    button.secondary:hover {
+      background: var(--secondary-hover);
+    }
+
+    .examples {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--chip-bg);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .chip:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    .status.ok {
+      color: var(--success);
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    .status.loading {
+      color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .panels {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-bg" aria-hidden="true">
+    <canvas class="particle-canvas" id="particleCanvas"></canvas>
+    <div class="petal-layer" id="petalLayer"></div>
+    <div class="bg-layer simple"></div>
+    <div class="bg-layer tech"></div>
+    <div class="bg-layer apple"></div>
+    <div class="bg-layer cute"></div>
+    <div class="bg-ornaments">
+      <span class="ornament simple a"></span>
+      <span class="ornament simple b"></span>
+      <span class="ornament tech a"></span>
+      <span class="ornament tech b"></span>
+      <span class="ornament tech c"></span>
+      <span class="ornament apple a"></span>
+      <span class="ornament apple b"></span>
+      <span class="ornament cute a">♥</span>
+      <span class="ornament cute b">✦</span>
+      <span class="ornament cute c">☁</span>
+    </div>
+  </div>
+
+  <main class="app">
+    <header class="header">
+      <h1>多语言翻译 Demo</h1>
+      <p>支持中文、英语、俄语、法语、日语互译</p>
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-btn active" data-theme="simple" type="button">简洁</button>
+        <button class="theme-btn" data-theme="tech" type="button">科技</button>
+        <button class="theme-btn" data-theme="apple" type="button">Apple</button>
+        <button class="theme-btn" data-theme="cute" type="button">可爱</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="lang-bar">
+        <div class="lang-box">
+          <label for="fromLangSelect">源语言 / From</label>
+          <select class="lang-select" id="fromLangSelect"></select>
+        </div>
+        <button class="swap-btn" id="swapBtn" title="切换语言" type="button">⇄</button>
+        <div class="lang-box">
+          <label for="toLangSelect">目标语言 / To</label>
+          <select class="lang-select" id="toLangSelect"></select>
+        </div>
+      </div>
+
+      <div class="panels">
+        <div class="panel">
+          <label for="input">输入文本 / Input</label>
+          <textarea id="input" placeholder="请输入要翻译的内容..."></textarea>
+        </div>
+        <div class="panel output-wrap">
+          <label for="output">翻译结果 / Output</label>
+          <textarea id="output" readonly placeholder="翻译结果会显示在这里..."></textarea>
+          <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <span id="loadingText">正在翻译，请稍候...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="translateBtn" type="button">
+          <span class="btn-spinner"></span>
+          <span id="translateBtnText">翻译 Translate</span>
+        </button>
+        <button class="secondary" id="clearBtn" type="button">清空 Clear</button>
+        <button class="secondary" id="copyBtn" type="button">复制结果 Copy</button>
+      </div>
+
+      <div class="examples" id="examples"></div>
+      <div class="status" id="status"></div>
+    </section>
+  </main>
+
+  <script>
+    const inputEl = document.getElementById("input");
+    const outputEl = document.getElementById("output");
+    const statusEl = document.getElementById("status");
+    const fromLangSelect = document.getElementById("fromLangSelect");
+    const toLangSelect = document.getElementById("toLangSelect");
+    const examplesEl = document.getElementById("examples");
+    const translateBtn = document.getElementById("translateBtn");
+    const translateBtnText = document.getElementById("translateBtnText");
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const loadingText = document.getElementById("loadingText");
+    const swapBtn = document.getElementById("swapBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const themeSwitcher = document.getElementById("themeSwitcher");
+    const particleCanvas = document.getElementById("particleCanvas");
+    const petalLayer = document.getElementById("petalLayer");
+
+    const THEME_STORAGE_KEY = "translate-demo-theme";
+    const THEMES = ["simple", "tech", "apple", "cute"];
+
+    let isTranslating = false;
+    let currentTheme = "simple";
+    let particleFrameId = null;
+    let particleRunning = false;
+    let particleResizeBound = false;
+    let particles = [];
+    let particleCtx = null;
+
+    const PARTICLE_CONFIG = {
+      simple: { count: 36, mode: "float", colors: ["rgba(37, 99, 235, 0.35)", "rgba(96, 165, 250, 0.28)", "rgba(148, 163, 184, 0.3)"] },
+      tech: { count: 54, mode: "network", colors: ["rgba(69, 202, 255, 0.9)", "rgba(139, 125, 255, 0.85)", "rgba(59, 231, 166, 0.75)"] },
+      apple: { count: 24, mode: "float", colors: ["rgba(0, 113, 227, 0.22)", "rgba(175, 82, 222, 0.18)", "rgba(0, 0, 0, 0.08)"] },
+      cute: { count: 28, mode: "petal", colors: ["#ff8ec0", "#ff6cab", "#d38bff", "#ffb3d5"] }
+    };
+
+    const PETAL_SYMBOLS = {
+      simple: ["✦", "•", "◦", "·"],
+      cute: ["🌸", "✿", "❀", "🌺", "♡"]
+    };
+
+    const LANGUAGES = {
+      zh: { code: "zh-CN", label: "中文", placeholder: "请输入要翻译的内容..." },
+      en: { code: "en", label: "English", placeholder: "Type text to translate..." },
+      ru: { code: "ru", label: "Русский", placeholder: "Введите текст для перевода..." },
+      fr: { code: "fr", label: "Français", placeholder: "Saisissez le texte à traduire..." },
+      ja: { code: "ja", label: "日本語", placeholder: "翻訳するテキストを入力してください..." }
+    };
+
+    const examples = {
+      zh: ["你好，世界", "今天天气很好", "人工智能正在改变世界"],
+      en: ["Hello, world", "How are you today?", "AI is changing the world"],
+      ru: ["Привет, мир", "Как дела?", "Искусственный интеллект меняет мир"],
+      fr: ["Bonjour le monde", "Comment ça va ?", "L'intelligence artificielle change le monde"],
+      ja: ["こんにちは、世界", "お元気ですか", "人工知能が世界を変えています"]
+    };
+
+    function getLangKey(selectEl) {
+      return selectEl.value;
+    }
+
+    function getLangConfig(key) {
+      return LANGUAGES[key];
+    }
+
+    function setTheme(theme) {
+      const nextTheme = THEMES.includes(theme) ? theme : "simple";
+      currentTheme = nextTheme;
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      themeSwitcher.querySelectorAll(".theme-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.theme === nextTheme);
+      });
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      initParticles(nextTheme);
+      renderFallingPetals(nextTheme);
+    }
+
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function createParticle(width, height, theme) {
+      const config = PARTICLE_CONFIG[theme];
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: randomBetween(theme === "tech" ? 1.5 : 2, theme === "apple" ? 4 : 7),
+        speedX: randomBetween(-0.35, 0.35),
+        speedY: randomBetween(0.2, theme === "cute" ? 1.2 : 0.7),
+        rotation: Math.random() * Math.PI * 2,
+        spin: randomBetween(-0.03, 0.03),
+        sway: randomBetween(0.4, 1.2),
+        color: config.colors[Math.floor(Math.random() * config.colors.length)],
+        opacity: randomBetween(0.35, 0.9)
+      };
+    }
+
+    function drawPetalShape(ctx, particle) {
+      const size = particle.size * 2.2;
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rotation);
+      ctx.globalAlpha = particle.opacity;
+      ctx.fillStyle = particle.color;
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.2);
+      ctx.bezierCurveTo(size * 0.9, -size * 0.7, size * 0.9, size * 0.5, 0, size);
+      ctx.bezierCurveTo(-size * 0.9, size * 0.5, -size * 0.9, -size * 0.7, 0, -size * 0.2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function stopParticles() {
+      particleRunning = false;
+      if (particleFrameId) {
+        cancelAnimationFrame(particleFrameId);
+        particleFrameId = null;
+      }
+    }
+
+    function resizeParticles(theme) {
+      particleCanvas.width = window.innerWidth;
+      particleCanvas.height = window.innerHeight;
+      const config = PARTICLE_CONFIG[theme];
+      particles = Array.from({ length: config.count }, () =>
+        createParticle(particleCanvas.width, particleCanvas.height, theme)
+      );
+    }
+
+    function drawNetwork(ctx, items) {
+      for (let i = 0; i < items.length; i += 1) {
+        for (let j = i + 1; j < items.length; j += 1) {
+          const dx = items[i].x - items[j].x;
+          const dy = items[i].y - items[j].y;
+          const distance = Math.hypot(dx, dy);
+          if (distance < 120) {
+            ctx.strokeStyle = `rgba(69, 202, 255, ${0.22 * (1 - distance / 120)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(items[i].x, items[i].y);
+            ctx.lineTo(items[j].x, items[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animateParticles(theme) {
+      if (!particleRunning || !particleCtx) return;
+
+      const config = PARTICLE_CONFIG[theme];
+      const ctx = particleCtx;
+      ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+
+      particles.forEach((particle) => {
+        particle.x += particle.speedX + Math.sin(particle.y * 0.01) * 0.08 * particle.sway;
+        particle.y += particle.speedY;
+        particle.rotation += particle.spin;
+
+        if (particle.y > particleCanvas.height + 20) {
+          particle.y = -20;
+          particle.x = Math.random() * particleCanvas.width;
+        }
+        if (particle.x < -20) particle.x = particleCanvas.width + 20;
+        if (particle.x > particleCanvas.width + 20) particle.x = -20;
+
+        if (config.mode === "petal") {
+          drawPetalShape(ctx, particle);
+          return;
+        }
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.globalAlpha = particle.opacity;
+        ctx.fill();
+
+        if (config.mode === "network") {
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = particle.color;
+        }
+      });
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+
+      if (config.mode === "network") {
+        drawNetwork(ctx, particles);
+      }
+
+      particleFrameId = requestAnimationFrame(() => animateParticles(theme));
+    }
+
+    function initParticles(theme) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        stopParticles();
+        particleCtx = particleCanvas.getContext("2d");
+        particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+        return;
+      }
+
+      stopParticles();
+      particleCtx = particleCanvas.getContext("2d");
+      resizeParticles(theme);
+
+      if (!particleResizeBound) {
+        window.addEventListener("resize", () => resizeParticles(currentTheme));
+        particleResizeBound = true;
+      }
+
+      particleRunning = true;
+      animateParticles(theme);
+    }
+
+    function renderFallingPetals(theme) {
+      if (!["simple", "cute"].includes(theme) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        petalLayer.innerHTML = "";
+        return;
+      }
+
+      const symbols = PETAL_SYMBOLS[theme];
+      const count = theme === "cute" ? 16 : 8;
+
+      petalLayer.innerHTML = Array.from({ length: count }, (_, index) => {
+        const left = randomBetween(2, 96);
+        const duration = randomBetween(10, 18);
+        const delay = randomBetween(0, 10);
+        const sway = `${randomBetween(-80, 80)}px`;
+        const symbol = symbols[index % symbols.length];
+        return `<span class="falling-petal" style="left:${left}%; --sway:${sway}; animation-duration:${duration}s; animation-delay:${delay}s;">${symbol}</span>`;
+      }).join("");
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      setTheme(savedTheme || "simple");
+    }
+
+    function renderLanguageOptions() {
+      const options = Object.entries(LANGUAGES)
+        .map(([key, lang]) => `<option value="${key}">${lang.label}</option>`)
+        .join("");
+
+      fromLangSelect.innerHTML = options;
+      toLangSelect.innerHTML = options;
+      fromLangSelect.value = "zh";
+      toLangSelect.value = "en";
+    }
+
+    function updateLangUI() {
+      const fromLang = getLangConfig(getLangKey(fromLangSelect));
+      inputEl.placeholder = fromLang.placeholder;
+      outputEl.placeholder = "翻译结果会显示在这里... / Translation will appear here...";
+      renderExamples();
+    }
+
+    function renderExamples() {
+      const fromKey = getLangKey(fromLangSelect);
+      examplesEl.innerHTML = (examples[fromKey] || [])
+        .map((text) => `<button class="chip" data-text="${text}" type="button">${text}</button>`)
+        .join("");
+    }
+
+    function ensureDifferentLanguages() {
+      if (fromLangSelect.value === toLangSelect.value) {
+        const keys = Object.keys(LANGUAGES);
+        const currentIndex = keys.indexOf(fromLangSelect.value);
+        toLangSelect.value = keys[(currentIndex + 1) % keys.length];
+      }
+    }
+
+    function setStatus(message, type = "") {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`.trim();
+    }
+
+    function setLoading(loading) {
+      isTranslating = loading;
+      translateBtn.disabled = loading;
+      swapBtn.disabled = loading;
+      clearBtn.disabled = loading;
+      copyBtn.disabled = loading;
+      inputEl.disabled = loading;
+      fromLangSelect.disabled = loading;
+      toLangSelect.disabled = loading;
+      themeSwitcher.querySelectorAll(".theme-btn").forEach((btn) => {
+        btn.disabled = loading;
+      });
+      translateBtn.classList.toggle("loading", loading);
+      loadingOverlay.classList.toggle("active", loading);
+
+      examplesEl.querySelectorAll(".chip").forEach((chip) => {
+        chip.disabled = loading;
+      });
+
+      if (loading) {
+        translateBtnText.textContent = "翻译中...";
+        loadingText.textContent = "正在翻译，请稍候...";
+        setStatus("正在请求翻译服务...", "loading");
+      } else {
+        translateBtnText.textContent = "翻译 Translate";
+        loadingText.textContent = "正在翻译，请稍候...";
+      }
+    }
+
+    async function translateText(text) {
+      const fromLang = getLangConfig(getLangKey(fromLangSelect));
+      const toLang = getLangConfig(getLangKey(toLangSelect));
+      const langpair = `${fromLang.code}|${toLang.code}`;
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("翻译服务暂时不可用，请稍后再试。");
+      }
+      const data = await response.json();
+      const translated = data?.responseData?.translatedText;
+      if (!translated) {
+        throw new Error("未获取到翻译结果。");
+      }
+      return translated;
+    }
+
+    async function handleTranslate() {
+      if (isTranslating) return;
+
+      const text = inputEl.value.trim();
+      if (!text) {
+        setStatus("请先输入要翻译的内容。", "error");
+        return;
+      }
+
+      if (fromLangSelect.value === toLangSelect.value) {
+        setStatus("源语言和目标语言不能相同。", "error");
+        return;
+      }
+
+      setLoading(true);
+      outputEl.value = "";
+
+      try {
+        const result = await translateText(text);
+        outputEl.value = result;
+        setStatus("翻译完成。", "ok");
+      } catch (error) {
+        setStatus(error.message || "翻译失败，请检查网络后重试。", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    themeSwitcher.addEventListener("click", (event) => {
+      const btn = event.target.closest(".theme-btn");
+      if (!btn || isTranslating) return;
+      setTheme(btn.dataset.theme);
+    });
+
+    translateBtn.addEventListener("click", handleTranslate);
+    clearBtn.addEventListener("click", () => {
+      if (isTranslating) return;
+      inputEl.value = "";
+      outputEl.value = "";
+      setStatus("");
+    });
+    copyBtn.addEventListener("click", async () => {
+      if (isTranslating) return;
+      if (!outputEl.value) {
+        setStatus("没有可复制的内容。", "error");
+        return;
+      }
+      await navigator.clipboard.writeText(outputEl.value);
+      setStatus("已复制到剪贴板。", "ok");
+    });
+    swapBtn.addEventListener("click", () => {
+      if (isTranslating) return;
+      const tempLang = fromLangSelect.value;
+      fromLangSelect.value = toLangSelect.value;
+      toLangSelect.value = tempLang;
+      const tempText = inputEl.value;
+      inputEl.value = outputEl.value;
+      outputEl.value = tempText;
+      updateLangUI();
+      setStatus("已切换翻译方向。");
+    });
+    fromLangSelect.addEventListener("change", () => {
+      ensureDifferentLanguages();
+      updateLangUI();
+    });
+    toLangSelect.addEventListener("change", () => {
+      if (fromLangSelect.value === toLangSelect.value) {
+        setStatus("源语言和目标语言不能相同。", "error");
+      } else {
+        setStatus("");
+      }
+    });
+    examplesEl.addEventListener("click", (event) => {
+      if (isTranslating) return;
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      inputEl.value = chip.dataset.text;
+      handleTranslate();
+    });
+    inputEl.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        handleTranslate();
+      }
+    });
+
+    initTheme();
+    renderLanguageOptions();
+    updateLangUI();
+  </script>
+</body>
+</html>
