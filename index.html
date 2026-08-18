@@ -1,20 +1,120 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="simple">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>多语言翻译 Demo</title>
   <style>
-    :root {
-      --bg: #f4f7fb;
+    :root,
+    [data-theme="simple"] {
+      --body-bg: linear-gradient(160deg, #eef4ff 0%, #f8fafc 45%, #f1f5f9 100%);
       --card: #ffffff;
+      --input-bg: #f8fafc;
+      --output-bg: #f8fafc;
       --border: #dbe4f0;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
+      --secondary-bg: #eef2ff;
+      --secondary-text: #1e3a8a;
+      --secondary-hover: #e0e7ff;
       --text: #0f172a;
       --muted: #64748b;
       --success: #059669;
+      --error: #dc2626;
       --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --focus-ring: rgba(37, 99, 235, 0.12);
+      --spinner-track: rgba(37, 99, 235, 0.18);
+      --overlay-bg: rgba(248, 250, 252, 0.88);
+      --chip-bg: #ffffff;
+      --swap-btn-bg: #ffffff;
+      --radius-card: 16px;
+      --radius-input: 12px;
+      --radius-btn: 10px;
+      --font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    [data-theme="tech"] {
+      --body-bg:
+        radial-gradient(circle at 10% 10%, rgba(69, 202, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 90% 0%, rgba(139, 125, 255, 0.25), transparent 25%),
+        linear-gradient(145deg, #050811, #0a1225 46%, #090d1f);
+      --card: rgba(15, 24, 46, 0.82);
+      --input-bg: rgba(8, 14, 30, 0.72);
+      --output-bg: rgba(8, 14, 30, 0.72);
+      --border: rgba(91, 162, 255, 0.32);
+      --primary: #45caff;
+      --primary-hover: #2eb8ef;
+      --secondary-bg: rgba(69, 202, 255, 0.12);
+      --secondary-text: #b8dcff;
+      --secondary-hover: rgba(69, 202, 255, 0.2);
+      --text: #dce9ff;
+      --muted: #8ea6d3;
+      --success: #3be7a6;
+      --error: #ff8f8f;
+      --shadow: 0 0 24px rgba(69, 202, 255, 0.18);
+      --focus-ring: rgba(69, 202, 255, 0.2);
+      --spinner-track: rgba(69, 202, 255, 0.18);
+      --overlay-bg: rgba(8, 14, 30, 0.88);
+      --chip-bg: rgba(12, 22, 44, 0.9);
+      --swap-btn-bg: rgba(12, 22, 44, 0.9);
+      --radius-card: 14px;
+      --radius-input: 12px;
+      --radius-btn: 10px;
+      --font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    [data-theme="apple"] {
+      --body-bg: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+      --card: rgba(255, 255, 255, 0.82);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --output-bg: rgba(245, 245, 247, 0.95);
+      --border: rgba(0, 0, 0, 0.08);
+      --primary: #0071e3;
+      --primary-hover: #0077ed;
+      --secondary-bg: #f5f5f7;
+      --secondary-text: #1d1d1f;
+      --secondary-hover: #ececf0;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --success: #248a3d;
+      --error: #d70015;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+      --focus-ring: rgba(0, 113, 227, 0.18);
+      --spinner-track: rgba(0, 113, 227, 0.18);
+      --overlay-bg: rgba(255, 255, 255, 0.82);
+      --chip-bg: #f5f5f7;
+      --swap-btn-bg: #ffffff;
+      --radius-card: 22px;
+      --radius-input: 16px;
+      --radius-btn: 999px;
+      --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+
+    [data-theme="cute"] {
+      --body-bg: linear-gradient(160deg, #fff0f6 0%, #fff7fb 40%, #f4f0ff 100%);
+      --card: #fffafd;
+      --input-bg: #fff7fc;
+      --output-bg: #fff4fa;
+      --border: #f6c9df;
+      --primary: #ff6cab;
+      --primary-hover: #ff4f98;
+      --secondary-bg: #f7e8ff;
+      --secondary-text: #8b4bb8;
+      --secondary-hover: #efdbff;
+      --text: #5b3a4d;
+      --muted: #9b6f88;
+      --success: #4cb98a;
+      --error: #e85d8f;
+      --shadow: 0 14px 34px rgba(255, 108, 171, 0.16);
+      --focus-ring: rgba(255, 108, 171, 0.18);
+      --spinner-track: rgba(255, 108, 171, 0.2);
+      --overlay-bg: rgba(255, 247, 252, 0.9);
+      --chip-bg: #fff7fc;
+      --swap-btn-bg: #fff7fc;
+      --radius-card: 24px;
+      --radius-input: 18px;
+      --radius-btn: 999px;
+      --font-family: "Nunito", "Comic Sans MS", "PingFang SC", "Microsoft YaHei", sans-serif;
     }
 
     * {
@@ -25,10 +125,11 @@
 
     body {
       min-height: 100vh;
-      background: linear-gradient(160deg, #eef4ff 0%, #f8fafc 45%, #f1f5f9 100%);
+      background: var(--body-bg);
       color: var(--text);
-      font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: var(--font-family);
       padding: 32px 16px;
+      transition: background 0.35s ease, color 0.35s ease;
     }
 
     .app {
@@ -51,12 +152,45 @@
       font-size: 15px;
     }
 
+    .theme-switcher {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .theme-btn {
+      border: 1px solid var(--border);
+      background: var(--chip-bg);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .theme-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .theme-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius-card);
       box-shadow: var(--shadow);
       padding: 20px;
+      backdrop-filter: blur(10px);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     }
 
     .lang-bar {
@@ -80,11 +214,20 @@
       margin-bottom: 0;
     }
 
+    .lang-select,
+    textarea,
+    .swap-btn,
+    button.primary,
+    button.secondary,
+    .chip {
+      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    }
+
     .lang-select {
       width: 100%;
       padding: 10px 12px;
-      border-radius: 10px;
-      background: #f8fafc;
+      border-radius: var(--radius-input);
+      background: var(--input-bg);
       border: 1px solid var(--border);
       font-size: 14px;
       font-weight: 600;
@@ -93,9 +236,10 @@
       cursor: pointer;
     }
 
-    .lang-select:focus {
+    .lang-select:focus,
+    textarea:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      box-shadow: 0 0 0 3px var(--focus-ring);
     }
 
     .lang-select:disabled {
@@ -108,10 +252,10 @@
       height: 42px;
       border: 1px solid var(--border);
       border-radius: 50%;
-      background: #fff;
+      background: var(--swap-btn-bg);
+      color: var(--text);
       cursor: pointer;
       font-size: 18px;
-      transition: 0.2s ease;
     }
 
     .swap-btn:hover {
@@ -145,8 +289,8 @@
       justify-content: center;
       flex-direction: column;
       gap: 12px;
-      border-radius: 12px;
-      background: rgba(248, 250, 252, 0.88);
+      border-radius: var(--radius-input);
+      background: var(--overlay-bg);
       backdrop-filter: blur(2px);
       color: var(--primary);
       font-size: 14px;
@@ -161,7 +305,7 @@
     .spinner {
       width: 28px;
       height: 28px;
-      border: 3px solid rgba(37, 99, 235, 0.18);
+      border: 3px solid var(--spinner-track);
       border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -178,21 +322,17 @@
       min-height: 180px;
       resize: vertical;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius-input);
       padding: 14px;
       font-size: 15px;
       line-height: 1.6;
       outline: none;
-      transition: border-color 0.2s;
-    }
-
-    textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      background: var(--input-bg);
+      color: var(--text);
     }
 
     #output {
-      background: #f8fafc;
+      background: var(--output-bg);
     }
 
     .actions {
@@ -205,11 +345,10 @@
     button.primary,
     button.secondary {
       border: none;
-      border-radius: 10px;
+      border-radius: var(--radius-btn);
       padding: 10px 16px;
       font-size: 14px;
       cursor: pointer;
-      transition: 0.2s ease;
     }
 
     button.primary {
@@ -223,7 +362,8 @@
 
     button.primary:disabled,
     button.secondary:disabled,
-    .swap-btn:disabled {
+    .swap-btn:disabled,
+    .theme-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
@@ -250,12 +390,12 @@
     }
 
     button.secondary {
-      background: #eef2ff;
-      color: #1e3a8a;
+      background: var(--secondary-bg);
+      color: var(--secondary-text);
     }
 
     button.secondary:hover {
-      background: #e0e7ff;
+      background: var(--secondary-hover);
     }
 
     .examples {
@@ -267,7 +407,7 @@
 
     .chip {
       border: 1px solid var(--border);
-      background: #fff;
+      background: var(--chip-bg);
       color: var(--muted);
       border-radius: 999px;
       padding: 6px 12px;
@@ -297,7 +437,7 @@
     }
 
     .status.error {
-      color: #dc2626;
+      color: var(--error);
     }
 
     .status.loading {
@@ -316,6 +456,12 @@
     <header class="header">
       <h1>多语言翻译 Demo</h1>
       <p>支持中文、英语、俄语、法语、日语互译</p>
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-btn active" data-theme="simple" type="button">简洁</button>
+        <button class="theme-btn" data-theme="tech" type="button">科技</button>
+        <button class="theme-btn" data-theme="apple" type="button">Apple</button>
+        <button class="theme-btn" data-theme="cute" type="button">可爱</button>
+      </div>
     </header>
 
     <section class="card">
@@ -324,7 +470,7 @@
           <label for="fromLangSelect">源语言 / From</label>
           <select class="lang-select" id="fromLangSelect"></select>
         </div>
-        <button class="swap-btn" id="swapBtn" title="切换语言">⇄</button>
+        <button class="swap-btn" id="swapBtn" title="切换语言" type="button">⇄</button>
         <div class="lang-box">
           <label for="toLangSelect">目标语言 / To</label>
           <select class="lang-select" id="toLangSelect"></select>
@@ -347,12 +493,12 @@
       </div>
 
       <div class="actions">
-        <button class="primary" id="translateBtn">
+        <button class="primary" id="translateBtn" type="button">
           <span class="btn-spinner"></span>
           <span id="translateBtnText">翻译 Translate</span>
         </button>
-        <button class="secondary" id="clearBtn">清空 Clear</button>
-        <button class="secondary" id="copyBtn">复制结果 Copy</button>
+        <button class="secondary" id="clearBtn" type="button">清空 Clear</button>
+        <button class="secondary" id="copyBtn" type="button">复制结果 Copy</button>
       </div>
 
       <div class="examples" id="examples"></div>
@@ -374,6 +520,10 @@
     const swapBtn = document.getElementById("swapBtn");
     const clearBtn = document.getElementById("clearBtn");
     const copyBtn = document.getElementById("copyBtn");
+    const themeSwitcher = document.getElementById("themeSwitcher");
+
+    const THEME_STORAGE_KEY = "translate-demo-theme";
+    const THEMES = ["simple", "tech", "apple", "cute"];
 
     let isTranslating = false;
 
@@ -401,6 +551,20 @@
       return LANGUAGES[key];
     }
 
+    function setTheme(theme) {
+      const nextTheme = THEMES.includes(theme) ? theme : "simple";
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      themeSwitcher.querySelectorAll(".theme-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.theme === nextTheme);
+      });
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      setTheme(savedTheme || "simple");
+    }
+
     function renderLanguageOptions() {
       const options = Object.entries(LANGUAGES)
         .map(([key, lang]) => `<option value="${key}">${lang.label}</option>`)
@@ -422,7 +586,7 @@
     function renderExamples() {
       const fromKey = getLangKey(fromLangSelect);
       examplesEl.innerHTML = (examples[fromKey] || [])
-        .map((text) => `<button class="chip" data-text="${text}">${text}</button>`)
+        .map((text) => `<button class="chip" data-text="${text}" type="button">${text}</button>`)
         .join("");
     }
 
@@ -448,6 +612,9 @@
       inputEl.disabled = loading;
       fromLangSelect.disabled = loading;
       toLangSelect.disabled = loading;
+      themeSwitcher.querySelectorAll(".theme-btn").forEach((btn) => {
+        btn.disabled = loading;
+      });
       translateBtn.classList.toggle("loading", loading);
       loadingOverlay.classList.toggle("active", loading);
 
@@ -510,6 +677,12 @@
       }
     }
 
+    themeSwitcher.addEventListener("click", (event) => {
+      const btn = event.target.closest(".theme-btn");
+      if (!btn || isTranslating) return;
+      setTheme(btn.dataset.theme);
+    });
+
     translateBtn.addEventListener("click", handleTranslate);
     clearBtn.addEventListener("click", () => {
       if (isTranslating) return;
@@ -561,6 +734,7 @@
       }
     });
 
+    initTheme();
     renderLanguageOptions();
     updateLangUI();
   </script>
