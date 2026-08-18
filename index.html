@@ -142,6 +142,75 @@
       overflow: hidden;
     }
 
+    .particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.9;
+    }
+
+    .petal-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    [data-theme="cute"] .petal-layer,
+    [data-theme="simple"] .petal-layer {
+      opacity: 1;
+    }
+
+    .falling-petal {
+      position: absolute;
+      top: -8vh;
+      font-size: 18px;
+      opacity: 0;
+      animation: petalFall linear infinite;
+      filter: drop-shadow(0 2px 4px rgba(255, 108, 171, 0.18));
+    }
+
+    [data-theme="simple"] .falling-petal {
+      color: rgba(37, 99, 235, 0.22);
+      filter: none;
+      font-size: 14px;
+    }
+
+    [data-theme="cute"] .falling-petal {
+      color: rgba(255, 108, 171, 0.55);
+    }
+
+    @keyframes petalFall {
+      0% {
+        transform: translate3d(0, -10vh, 0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.85;
+      }
+      100% {
+        transform: translate3d(var(--sway), 110vh, 0) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .falling-petal,
+      .bg-layer.tech::after,
+      .ornament.cute.a,
+      .ornament.cute.b,
+      .ornament.cute.c,
+      .bg-layer.cute::before {
+        animation: none !important;
+      }
+
+      .particle-canvas {
+        display: none;
+      }
+    }
+
     .bg-layer {
       position: absolute;
       inset: 0;
@@ -718,6 +787,8 @@
 </head>
 <body>
   <div class="page-bg" aria-hidden="true">
+    <canvas class="particle-canvas" id="particleCanvas"></canvas>
+    <div class="petal-layer" id="petalLayer"></div>
     <div class="bg-layer simple"></div>
     <div class="bg-layer tech"></div>
     <div class="bg-layer apple"></div>
@@ -805,11 +876,31 @@
     const clearBtn = document.getElementById("clearBtn");
     const copyBtn = document.getElementById("copyBtn");
     const themeSwitcher = document.getElementById("themeSwitcher");
+    const particleCanvas = document.getElementById("particleCanvas");
+    const petalLayer = document.getElementById("petalLayer");
 
     const THEME_STORAGE_KEY = "translate-demo-theme";
     const THEMES = ["simple", "tech", "apple", "cute"];
 
     let isTranslating = false;
+    let currentTheme = "simple";
+    let particleFrameId = null;
+    let particleRunning = false;
+    let particleResizeBound = false;
+    let particles = [];
+    let particleCtx = null;
+
+    const PARTICLE_CONFIG = {
+      simple: { count: 36, mode: "float", colors: ["rgba(37, 99, 235, 0.35)", "rgba(96, 165, 250, 0.28)", "rgba(148, 163, 184, 0.3)"] },
+      tech: { count: 54, mode: "network", colors: ["rgba(69, 202, 255, 0.9)", "rgba(139, 125, 255, 0.85)", "rgba(59, 231, 166, 0.75)"] },
+      apple: { count: 24, mode: "float", colors: ["rgba(0, 113, 227, 0.22)", "rgba(175, 82, 222, 0.18)", "rgba(0, 0, 0, 0.08)"] },
+      cute: { count: 28, mode: "petal", colors: ["#ff8ec0", "#ff6cab", "#d38bff", "#ffb3d5"] }
+    };
+
+    const PETAL_SYMBOLS = {
+      simple: ["✦", "•", "◦", "·"],
+      cute: ["🌸", "✿", "❀", "🌺", "♡"]
+    };
 
     const LANGUAGES = {
       zh: { code: "zh-CN", label: "中文", placeholder: "请输入要翻译的内容..." },
@@ -837,11 +928,170 @@
 
     function setTheme(theme) {
       const nextTheme = THEMES.includes(theme) ? theme : "simple";
+      currentTheme = nextTheme;
       document.documentElement.setAttribute("data-theme", nextTheme);
       themeSwitcher.querySelectorAll(".theme-btn").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.theme === nextTheme);
       });
       localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      initParticles(nextTheme);
+      renderFallingPetals(nextTheme);
+    }
+
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function createParticle(width, height, theme) {
+      const config = PARTICLE_CONFIG[theme];
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: randomBetween(theme === "tech" ? 1.5 : 2, theme === "apple" ? 4 : 7),
+        speedX: randomBetween(-0.35, 0.35),
+        speedY: randomBetween(0.2, theme === "cute" ? 1.2 : 0.7),
+        rotation: Math.random() * Math.PI * 2,
+        spin: randomBetween(-0.03, 0.03),
+        sway: randomBetween(0.4, 1.2),
+        color: config.colors[Math.floor(Math.random() * config.colors.length)],
+        opacity: randomBetween(0.35, 0.9)
+      };
+    }
+
+    function drawPetalShape(ctx, particle) {
+      const size = particle.size * 2.2;
+      ctx.save();
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rotation);
+      ctx.globalAlpha = particle.opacity;
+      ctx.fillStyle = particle.color;
+      ctx.beginPath();
+      ctx.moveTo(0, -size * 0.2);
+      ctx.bezierCurveTo(size * 0.9, -size * 0.7, size * 0.9, size * 0.5, 0, size);
+      ctx.bezierCurveTo(-size * 0.9, size * 0.5, -size * 0.9, -size * 0.7, 0, -size * 0.2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function stopParticles() {
+      particleRunning = false;
+      if (particleFrameId) {
+        cancelAnimationFrame(particleFrameId);
+        particleFrameId = null;
+      }
+    }
+
+    function resizeParticles(theme) {
+      particleCanvas.width = window.innerWidth;
+      particleCanvas.height = window.innerHeight;
+      const config = PARTICLE_CONFIG[theme];
+      particles = Array.from({ length: config.count }, () =>
+        createParticle(particleCanvas.width, particleCanvas.height, theme)
+      );
+    }
+
+    function drawNetwork(ctx, items) {
+      for (let i = 0; i < items.length; i += 1) {
+        for (let j = i + 1; j < items.length; j += 1) {
+          const dx = items[i].x - items[j].x;
+          const dy = items[i].y - items[j].y;
+          const distance = Math.hypot(dx, dy);
+          if (distance < 120) {
+            ctx.strokeStyle = `rgba(69, 202, 255, ${0.22 * (1 - distance / 120)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(items[i].x, items[i].y);
+            ctx.lineTo(items[j].x, items[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animateParticles(theme) {
+      if (!particleRunning || !particleCtx) return;
+
+      const config = PARTICLE_CONFIG[theme];
+      const ctx = particleCtx;
+      ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+
+      particles.forEach((particle) => {
+        particle.x += particle.speedX + Math.sin(particle.y * 0.01) * 0.08 * particle.sway;
+        particle.y += particle.speedY;
+        particle.rotation += particle.spin;
+
+        if (particle.y > particleCanvas.height + 20) {
+          particle.y = -20;
+          particle.x = Math.random() * particleCanvas.width;
+        }
+        if (particle.x < -20) particle.x = particleCanvas.width + 20;
+        if (particle.x > particleCanvas.width + 20) particle.x = -20;
+
+        if (config.mode === "petal") {
+          drawPetalShape(ctx, particle);
+          return;
+        }
+
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.globalAlpha = particle.opacity;
+        ctx.fill();
+
+        if (config.mode === "network") {
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = particle.color;
+        }
+      });
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+
+      if (config.mode === "network") {
+        drawNetwork(ctx, particles);
+      }
+
+      particleFrameId = requestAnimationFrame(() => animateParticles(theme));
+    }
+
+    function initParticles(theme) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        stopParticles();
+        particleCtx = particleCanvas.getContext("2d");
+        particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+        return;
+      }
+
+      stopParticles();
+      particleCtx = particleCanvas.getContext("2d");
+      resizeParticles(theme);
+
+      if (!particleResizeBound) {
+        window.addEventListener("resize", () => resizeParticles(currentTheme));
+        particleResizeBound = true;
+      }
+
+      particleRunning = true;
+      animateParticles(theme);
+    }
+
+    function renderFallingPetals(theme) {
+      if (!["simple", "cute"].includes(theme) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        petalLayer.innerHTML = "";
+        return;
+      }
+
+      const symbols = PETAL_SYMBOLS[theme];
+      const count = theme === "cute" ? 16 : 8;
+
+      petalLayer.innerHTML = Array.from({ length: count }, (_, index) => {
+        const left = randomBetween(2, 96);
+        const duration = randomBetween(10, 18);
+        const delay = randomBetween(0, 10);
+        const sway = `${randomBetween(-80, 80)}px`;
+        const symbol = symbols[index % symbols.length];
+        return `<span class="falling-petal" style="left:${left}%; --sway:${sway}; animation-duration:${duration}s; animation-delay:${delay}s;">${symbol}</span>`;
+      }).join("");
     }
 
     function initTheme() {
