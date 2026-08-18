@@ -124,7 +124,9 @@
     }
 
     body {
+      position: relative;
       min-height: 100vh;
+      overflow-x: hidden;
       background: var(--body-bg);
       color: var(--text);
       font-family: var(--font-family);
@@ -132,7 +134,270 @@
       transition: background 0.35s ease, color 0.35s ease;
     }
 
+    .page-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-layer {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    [data-theme="simple"] .bg-layer.simple,
+    [data-theme="tech"] .bg-layer.tech,
+    [data-theme="apple"] .bg-layer.apple,
+    [data-theme="cute"] .bg-layer.cute {
+      opacity: 1;
+    }
+
+    .bg-layer.simple {
+      background:
+        radial-gradient(circle, rgba(37, 99, 235, 0.12) 1px, transparent 1.6px) 0 0 / 24px 24px,
+        repeating-linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0 1px, transparent 1px 28px);
+    }
+
+    .bg-layer.simple::before,
+    .bg-layer.simple::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      border-radius: 24px;
+    }
+
+    .bg-layer.simple::before {
+      width: 180px;
+      height: 180px;
+      top: 8%;
+      right: 6%;
+      transform: rotate(18deg);
+    }
+
+    .bg-layer.simple::after {
+      width: 120px;
+      height: 120px;
+      bottom: 10%;
+      left: 5%;
+      border-radius: 50%;
+    }
+
+    .bg-layer.tech {
+      background:
+        linear-gradient(rgba(69, 202, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(69, 202, 255, 0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+    }
+
+    .bg-layer.tech::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(69, 202, 255, 0.22), transparent 24%),
+        radial-gradient(circle at 85% 12%, rgba(139, 125, 255, 0.24), transparent 22%),
+        radial-gradient(circle at 70% 80%, rgba(59, 231, 166, 0.12), transparent 20%);
+    }
+
+    .bg-layer.tech::after {
+      content: "";
+      position: absolute;
+      left: -20%;
+      right: -20%;
+      top: 35%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(69, 202, 255, 0.7), transparent);
+      animation: scan 6s linear infinite;
+      box-shadow: 0 0 18px rgba(69, 202, 255, 0.45);
+    }
+
+    .bg-layer.apple {
+      background:
+        radial-gradient(circle, rgba(0, 0, 0, 0.035) 0.8px, transparent 0.8px) 0 0 / 18px 18px;
+    }
+
+    .bg-layer.apple::before,
+    .bg-layer.apple::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(8px);
+    }
+
+    .bg-layer.apple::before {
+      width: 320px;
+      height: 320px;
+      top: -80px;
+      left: -60px;
+      background: radial-gradient(circle, rgba(0, 113, 227, 0.18), transparent 70%);
+    }
+
+    .bg-layer.apple::after {
+      width: 380px;
+      height: 380px;
+      right: -100px;
+      bottom: -120px;
+      background: radial-gradient(circle, rgba(175, 82, 222, 0.16), transparent 72%);
+    }
+
+    .bg-layer.cute {
+      background:
+        radial-gradient(circle, rgba(255, 108, 171, 0.16) 2px, transparent 2.5px) 0 0 / 28px 28px,
+        radial-gradient(circle, rgba(139, 75, 184, 0.1) 1.5px, transparent 2px) 14px 14px / 28px 28px;
+    }
+
+    .bg-layer.cute::before {
+      content: "♥ ✦ ♡ ☁ ✧ ♥ ★ ♡";
+      position: absolute;
+      inset: 0;
+      font-size: 28px;
+      line-height: 2.2;
+      letter-spacing: 42px;
+      color: rgba(255, 108, 171, 0.18);
+      word-spacing: 80px;
+      transform: rotate(-8deg);
+      animation: floatDecor 12s ease-in-out infinite;
+    }
+
+    .bg-layer.cute::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 180px;
+      background:
+        radial-gradient(120% 80% at 50% 100%, rgba(255, 182, 214, 0.35), transparent 70%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23ffd8ea' d='M0,64 C200,120 400,0 600,48 C800,96 1000,24 1200,64 L1200,120 L0,120 Z'/%3E%3C/svg%3E") bottom center / 100% 120px no-repeat;
+    }
+
+    .bg-ornaments {
+      position: absolute;
+      inset: 0;
+    }
+
+    .ornament {
+      position: absolute;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    [data-theme="simple"] .ornament.simple,
+    [data-theme="tech"] .ornament.tech,
+    [data-theme="apple"] .ornament.apple,
+    [data-theme="cute"] .ornament.cute {
+      opacity: 1;
+    }
+
+    .ornament.simple.a {
+      top: 14%;
+      left: 8%;
+      width: 64px;
+      height: 64px;
+      border: 2px solid rgba(37, 99, 235, 0.14);
+      border-radius: 16px;
+      transform: rotate(-12deg);
+    }
+
+    .ornament.simple.b {
+      right: 10%;
+      bottom: 16%;
+      width: 90px;
+      height: 90px;
+      border: 2px dashed rgba(37, 99, 235, 0.12);
+      border-radius: 50%;
+    }
+
+    .ornament.tech.a,
+    .ornament.tech.b,
+    .ornament.tech.c {
+      border: 1px solid rgba(69, 202, 255, 0.35);
+      box-shadow: 0 0 16px rgba(69, 202, 255, 0.18);
+    }
+
+    .ornament.tech.a {
+      top: 12%;
+      left: 7%;
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      transform: rotate(45deg);
+    }
+
+    .ornament.tech.b {
+      top: 18%;
+      right: 8%;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(69, 202, 255, 0.5);
+    }
+
+    .ornament.tech.c {
+      left: 12%;
+      bottom: 18%;
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(69, 202, 255, 0.8), transparent);
+      border: none;
+      box-shadow: none;
+    }
+
+    .ornament.apple.a,
+    .ornament.apple.b {
+      border-radius: 50%;
+      filter: blur(2px);
+    }
+
+    .ornament.apple.a {
+      top: 18%;
+      right: 12%;
+      width: 110px;
+      height: 110px;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .ornament.apple.b {
+      bottom: 14%;
+      left: 10%;
+      width: 76px;
+      height: 76px;
+      background: rgba(245, 245, 247, 0.7);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .ornament.cute.a,
+    .ornament.cute.b,
+    .ornament.cute.c {
+      font-size: 34px;
+      color: rgba(255, 108, 171, 0.28);
+      animation: floatDecor 8s ease-in-out infinite;
+    }
+
+    .ornament.cute.a { top: 10%; right: 12%; }
+    .ornament.cute.b { top: 28%; left: 8%; animation-delay: 1.2s; }
+    .ornament.cute.c { bottom: 18%; right: 16%; animation-delay: 2s; font-size: 42px; }
+
+    @keyframes scan {
+      0% { transform: translateY(-30vh); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(70vh); opacity: 0; }
+    }
+
+    @keyframes floatDecor {
+      0%, 100% { transform: translateY(0) rotate(-8deg); }
+      50% { transform: translateY(-12px) rotate(-4deg); }
+    }
+
     .app {
+      position: relative;
+      z-index: 1;
       max-width: 860px;
       margin: 0 auto;
     }
@@ -452,6 +717,25 @@
   </style>
 </head>
 <body>
+  <div class="page-bg" aria-hidden="true">
+    <div class="bg-layer simple"></div>
+    <div class="bg-layer tech"></div>
+    <div class="bg-layer apple"></div>
+    <div class="bg-layer cute"></div>
+    <div class="bg-ornaments">
+      <span class="ornament simple a"></span>
+      <span class="ornament simple b"></span>
+      <span class="ornament tech a"></span>
+      <span class="ornament tech b"></span>
+      <span class="ornament tech c"></span>
+      <span class="ornament apple a"></span>
+      <span class="ornament apple b"></span>
+      <span class="ornament cute a">♥</span>
+      <span class="ornament cute b">✦</span>
+      <span class="ornament cute c">☁</span>
+    </div>
+  </div>
+
   <main class="app">
     <header class="header">
       <h1>多语言翻译 Demo</h1>
