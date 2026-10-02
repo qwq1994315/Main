@@ -1251,38 +1251,87 @@
       return text.replace(/\s+/g, " ").trim().toLowerCase();
     }
 
+    function countLatinWords(text) {
+      return (text.match(/\b[a-zA-Z]{2,}\b/g) || []).length;
+    }
+
+    function hasRemainingSourceLanguage(source, translated, toLangKey) {
+      if (toLangKey === "zh") {
+        return countLatinWords(translated) >= 2 && countLatinWords(translated) >= Math.ceil(countLatinWords(source) * 0.35);
+      }
+      if (toLangKey === "ja") {
+        return countLatinWords(translated) >= 2;
+      }
+      if (toLangKey === "ru") {
+        return countLatinWords(translated) >= 2;
+      }
+      return false;
+    }
+
     function isUntranslated(source, translated, toLangKey) {
       if (!translated) return true;
       if (normalizeText(source) === normalizeText(translated)) return true;
-      return !looksTranslated(translated, toLangKey);
+      if (!looksTranslated(translated, toLangKey)) return true;
+      if (hasRemainingSourceLanguage(source, translated, toLangKey)) return true;
+      return false;
     }
 
-    async function translateSegmentParts(chunk, langpair, toLangKey) {
-      const parts = chunk.split(/(,|，|\n)/);
+    function shouldUseSegmentTranslation(text) {
+      const separators = (text.match(/[,，.!?。！？;；\n]/g) || []).length;
+      return separators >= 1 && text.length > 12;
+    }
+
+    function splitIntoTranslationUnits(text) {
+      return text.match(/[^,.;!?，。！？\n]+|[,.;!?，。！？\n]+/g) || [text];
+    }
+
+    async function translatePhrase(text, langpair, toLangKey, phraseCache) {
+      const cacheKey = `${langpair}::${text}`;
+      if (phraseCache.has(cacheKey)) {
+        return phraseCache.get(cacheKey);
+      }
+
+      const data = await requestTranslation(text, langpair);
+      let translated = pickBestTranslation(data, text, toLangKey);
+      if (isUntranslated(text, translated, toLangKey)) {
+        translated = text;
+      }
+
+      phraseCache.set(cacheKey, translated);
+      return translated;
+    }
+
+    async function translateSegmentParts(chunk, langpair, toLangKey, phraseCache) {
+      const units = splitIntoTranslationUnits(chunk);
       const translatedParts = [];
 
-      for (const part of parts) {
-        if (/^[,，\n]$/.test(part)) {
-          translatedParts.push(part);
+      for (const unit of units) {
+        if (/^[,.;!?，。！？\n\s]+$/.test(unit)) {
+          translatedParts.push(unit);
           continue;
         }
 
-        const trimmed = part.trim();
+        const trimmed = unit.trim();
         if (!trimmed) {
-          translatedParts.push(part);
+          translatedParts.push(unit);
           continue;
         }
 
-        const data = await requestTranslation(trimmed, langpair);
-        const translated = pickBestTranslation(data, trimmed, toLangKey);
-        const finalText = isUntranslated(trimmed, translated, toLangKey) ? trimmed : translated;
-        translatedParts.push(part.replace(trimmed, finalText));
+        const translated = await translatePhrase(trimmed, langpair, toLangKey, phraseCache);
+        translatedParts.push(unit.replace(trimmed, translated));
       }
 
       return translatedParts.join("");
     }
 
-    async function translateChunk(chunk, langpair, toLangKey) {
+    async function translateChunk(chunk, langpair, toLangKey, phraseCache) {
+      if (shouldUseSegmentTranslation(chunk)) {
+        const segmented = await translateSegmentParts(chunk, langpair, toLangKey, phraseCache);
+        if (!isUntranslated(chunk, segmented, toLangKey)) {
+          return segmented;
+        }
+      }
+
       const data = await requestTranslation(chunk, langpair);
       const translated = pickBestTranslation(data, chunk, toLangKey);
       const responseStatus = Number(data?.responseStatus);
@@ -1298,11 +1347,10 @@
         throw new Error("单段文本过长，请缩短后重试。");
       }
 
-      if (isUntranslated(chunk, translated, toLangKey) && /[,，;\n]/.test(chunk)) {
-        return translateSegmentParts(chunk, langpair, toLangKey);
-      }
-
       if (isUntranslated(chunk, translated, toLangKey)) {
+        if (shouldUseSegmentTranslation(chunk)) {
+          return translateSegmentParts(chunk, langpair, toLangKey, phraseCache);
+        }
         throw new Error("翻译结果异常，请尝试调整文本后重试。");
       }
 
@@ -1358,12 +1406,13 @@
       const langpair = `${fromLang.code}|${toLang.code}`;
       const chunks = splitTextIntoChunks(text);
       const translatedChunks = [];
+      const phraseCache = new Map();
 
       for (let index = 0; index < chunks.length; index += 1) {
         if (onProgress) {
           onProgress(index + 1, chunks.length);
         }
-        const translated = await translateChunk(chunks[index], langpair, getLangKey(toLangSelect));
+        const translated = await translateChunk(chunks[index], langpair, getLangKey(toLangSelect), phraseCache);
         translatedChunks.push(translated);
       }
 
