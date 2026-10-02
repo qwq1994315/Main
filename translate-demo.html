@@ -876,7 +876,7 @@
       <div class="panels">
         <div class="panel">
           <label for="input">输入文本 / Input</label>
-          <textarea id="input" placeholder="请输入要翻译的内容..."></textarea>
+          <textarea id="input" maxlength="2000" placeholder="请输入要翻译的内容..."></textarea>
         </div>
         <div class="panel output-wrap">
           <label for="output">翻译结果 / Output</label>
@@ -922,6 +922,8 @@
 
     const THEME_STORAGE_KEY = "translate-demo-theme";
     const THEMES = ["simple", "tech", "apple", "cute"];
+    const MAX_INPUT_CHARS = 2000;
+    const MAX_CHUNK_CHARS = 500;
 
     let isTranslating = false;
     let currentTheme = "simple";
@@ -1207,21 +1209,89 @@
       }
     }
 
-    async function translateText(text) {
-      const fromLang = getLangConfig(getLangKey(fromLangSelect));
-      const toLang = getLangConfig(getLangKey(toLangSelect));
-      const langpair = `${fromLang.code}|${toLang.code}`;
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}`;
+    async function translateChunk(chunk, langpair) {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${langpair}`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("翻译服务暂时不可用，请稍后再试。");
       }
       const data = await response.json();
       const translated = data?.responseData?.translatedText;
+      const responseStatus = Number(data?.responseStatus);
+
       if (!translated) {
         throw new Error("未获取到翻译结果。");
       }
+
+      if (
+        responseStatus >= 400 ||
+        /QUERY LENGTH LIMIT EXCEEDED|MAX ALLOWED QUERY/i.test(translated)
+      ) {
+        throw new Error("单段文本过长，请缩短后重试。");
+      }
+
       return translated;
+    }
+
+    function splitTextIntoChunks(text, maxChunkSize = MAX_CHUNK_CHARS) {
+      if (text.length <= maxChunkSize) {
+        return [text];
+      }
+
+      const chunks = [];
+      let remaining = text;
+
+      while (remaining.length > 0) {
+        if (remaining.length <= maxChunkSize) {
+          chunks.push(remaining);
+          break;
+        }
+
+        let sliceEnd = maxChunkSize;
+        const candidate = remaining.slice(0, sliceEnd);
+        const paragraphBreak = candidate.lastIndexOf("\n\n");
+
+        if (paragraphBreak > maxChunkSize * 0.35) {
+          sliceEnd = paragraphBreak + 2;
+        } else {
+          const breakTokens = ["。", "！", "？", ". ", "! ", "? ", "\n", "；", "; ", "，", ", "];
+          let bestBreak = -1;
+
+          breakTokens.forEach((token) => {
+            const index = candidate.lastIndexOf(token);
+            if (index > bestBreak && index > maxChunkSize * 0.25) {
+              bestBreak = index + token.length;
+            }
+          });
+
+          if (bestBreak > 0) {
+            sliceEnd = bestBreak;
+          }
+        }
+
+        chunks.push(remaining.slice(0, sliceEnd));
+        remaining = remaining.slice(sliceEnd);
+      }
+
+      return chunks;
+    }
+
+    async function translateText(text, onProgress) {
+      const fromLang = getLangConfig(getLangKey(fromLangSelect));
+      const toLang = getLangConfig(getLangKey(toLangSelect));
+      const langpair = `${fromLang.code}|${toLang.code}`;
+      const chunks = splitTextIntoChunks(text);
+      const translatedChunks = [];
+
+      for (let index = 0; index < chunks.length; index += 1) {
+        if (onProgress) {
+          onProgress(index + 1, chunks.length);
+        }
+        const translated = await translateChunk(chunks[index], langpair);
+        translatedChunks.push(translated);
+      }
+
+      return translatedChunks.join("");
     }
 
     async function handleTranslate() {
@@ -1238,11 +1308,21 @@
         return;
       }
 
+      if (text.length > MAX_INPUT_CHARS) {
+        setStatus(`文本长度不能超过 ${MAX_INPUT_CHARS} 字。`, "error");
+        return;
+      }
+
       setLoading(true);
       outputEl.value = "";
 
       try {
-        const result = await translateText(text);
+        const result = await translateText(text, (current, total) => {
+          if (total > 1) {
+            setStatus(`正在翻译第 ${current}/${total} 段...`, "loading");
+            loadingText.textContent = `正在翻译第 ${current}/${total} 段...`;
+          }
+        });
         outputEl.value = result;
         setStatus("翻译完成。", "ok");
       } catch (error) {
