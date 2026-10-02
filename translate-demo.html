@@ -529,7 +529,7 @@
 
     .lang-bar {
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 16px;
@@ -589,20 +589,47 @@
     }
 
     .swap-btn {
-      width: 42px;
-      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 46px;
+      height: 46px;
       border: 1px solid var(--border);
-      border-radius: 50%;
-      background: var(--swap-btn-bg);
-      color: var(--text);
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--swap-btn-bg) 0%, rgba(255, 255, 255, 0) 140%);
+      color: var(--primary);
       cursor: pointer;
-      font-size: 18px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background 0.25s ease;
+    }
+
+    .swap-btn svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+      transition: transform 0.35s ease;
     }
 
     .swap-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .swap-btn:hover svg {
       transform: rotate(180deg);
+    }
+
+    .swap-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+    }
+
+    .swap-btn:focus-visible {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--focus-ring);
     }
 
     .panels {
@@ -832,7 +859,14 @@
           <label for="fromLangSelect">源语言 / From</label>
           <select class="lang-select" id="fromLangSelect"></select>
         </div>
-        <button class="swap-btn" id="swapBtn" title="切换语言" type="button">⇄</button>
+        <button class="swap-btn" id="swapBtn" title="切换翻译方向" type="button" aria-label="切换翻译方向">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 16l-4-4 4-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M3 12h8.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+            <path d="M17 8l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M21 12H12.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+          </svg>
+        </button>
         <div class="lang-box">
           <label for="toLangSelect">目标语言 / To</label>
           <select class="lang-select" id="toLangSelect"></select>
