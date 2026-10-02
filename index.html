@@ -1209,14 +1209,82 @@
       }
     }
 
-    async function translateChunk(chunk, langpair) {
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${langpair}`;
+    async function requestTranslation(text, langpair) {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("翻译服务暂时不可用，请稍后再试。");
       }
-      const data = await response.json();
-      const translated = data?.responseData?.translatedText;
+      return response.json();
+    }
+
+    function pickBestTranslation(data, source, toLangKey) {
+      const direct = data?.responseData?.translatedText;
+      const matches = data?.matches || [];
+
+      if (direct && !isUntranslated(source, direct, toLangKey)) {
+        return direct;
+      }
+
+      for (const match of matches) {
+        const candidate = match?.translation;
+        if (!candidate || candidate === source) continue;
+        if (!isUntranslated(source, candidate, toLangKey)) {
+          return candidate;
+        }
+      }
+
+      return direct;
+    }
+
+    function looksTranslated(text, toLangKey) {
+      if (!text) return false;
+      if (toLangKey === "zh") return /[\u4e00-\u9fff]/.test(text);
+      if (toLangKey === "ja") return /[\u3040-\u30ff\u4e00-\u9fff]/.test(text);
+      if (toLangKey === "ru") return /[\u0400-\u04ff]/.test(text);
+      if (toLangKey === "fr") return /[àâçéèêëîïôùûüÿœæ]/i.test(text);
+      if (toLangKey === "en") return /[a-zA-Z]/.test(text) && !/[\u4e00-\u9fff]/.test(text);
+      return true;
+    }
+
+    function normalizeText(text) {
+      return text.replace(/\s+/g, " ").trim().toLowerCase();
+    }
+
+    function isUntranslated(source, translated, toLangKey) {
+      if (!translated) return true;
+      if (normalizeText(source) === normalizeText(translated)) return true;
+      return !looksTranslated(translated, toLangKey);
+    }
+
+    async function translateSegmentParts(chunk, langpair, toLangKey) {
+      const parts = chunk.split(/(,|，|\n)/);
+      const translatedParts = [];
+
+      for (const part of parts) {
+        if (/^[,，\n]$/.test(part)) {
+          translatedParts.push(part);
+          continue;
+        }
+
+        const trimmed = part.trim();
+        if (!trimmed) {
+          translatedParts.push(part);
+          continue;
+        }
+
+        const data = await requestTranslation(trimmed, langpair);
+        const translated = pickBestTranslation(data, trimmed, toLangKey);
+        const finalText = isUntranslated(trimmed, translated, toLangKey) ? trimmed : translated;
+        translatedParts.push(part.replace(trimmed, finalText));
+      }
+
+      return translatedParts.join("");
+    }
+
+    async function translateChunk(chunk, langpair, toLangKey) {
+      const data = await requestTranslation(chunk, langpair);
+      const translated = pickBestTranslation(data, chunk, toLangKey);
       const responseStatus = Number(data?.responseStatus);
 
       if (!translated) {
@@ -1228,6 +1296,14 @@
         /QUERY LENGTH LIMIT EXCEEDED|MAX ALLOWED QUERY/i.test(translated)
       ) {
         throw new Error("单段文本过长，请缩短后重试。");
+      }
+
+      if (isUntranslated(chunk, translated, toLangKey) && /[,，;\n]/.test(chunk)) {
+        return translateSegmentParts(chunk, langpair, toLangKey);
+      }
+
+      if (isUntranslated(chunk, translated, toLangKey)) {
+        throw new Error("翻译结果异常，请尝试调整文本后重试。");
       }
 
       return translated;
@@ -1287,7 +1363,7 @@
         if (onProgress) {
           onProgress(index + 1, chunks.length);
         }
-        const translated = await translateChunk(chunks[index], langpair);
+        const translated = await translateChunk(chunks[index], langpair, getLangKey(toLangSelect));
         translatedChunks.push(translated);
       }
 
